@@ -152,7 +152,6 @@ class ints_digits_reference {
 	}
 };
 
-
 template <integral T, integrals IntsT>
 class ints_digits {
 	private:
@@ -182,66 +181,11 @@ class ints_digits {
 };
 
 template <integral T, integrals IntsT>
-class ints_access_reference {
-	private:
-	using UT = std::make_unsigned_t<T>;
-	using DataT = base_t<IntsT>;
-	using UDataT = std::make_unsigned_t<DataT>;
-
-	static constexpr auto const access_digits{udigits_v<T>};
-	static constexpr auto const value_digits{udigits_v<DataT>};
-	static constexpr auto const values_size{size_v<IntsT>};
-	static constexpr auto const values_digits{values_size * value_digits};
-	static constexpr auto const slice_digits{gcd(access_digits, value_digits)};
-
-	DataT * values;
-	std::size_t i;
-
-	public:
-	constexpr ints_access_reference(DataT * const values, std::size_t const i) noexcept :
-	    values{values}, i{i} {}
-
-	constexpr operator T() const noexcept {
-		constexpr auto const mask{static_cast<UT>(lshift<UT>(1, slice_digits) - 1)};
-		auto const topfill{static_cast<UT>(-(values[values_size - 1] < 0))};
-		auto const offset{i * access_digits};
-		auto const fill{offset + access_digits};
-		auto const limit{min(fill, values_digits)};
-		UT result{topfill};
-		for (auto digit{limit}; digit > offset;) {
-			digit -= slice_digits;
-			result = lshift(result, slice_digits);
-			result |= ((values[digit / value_digits]) >>
-			           (digit % value_digits)) & mask;
-		}
-		return result;
-	}
-
-	constexpr ints_access_reference & operator =(T const assign) noexcept {
-		constexpr auto const mask{static_cast<UDataT>(lshift<UDataT>(1, slice_digits) - 1)};
-		auto const offset{i * access_digits};
-		auto const fill{offset + access_digits};
-		auto const limit{min(fill, values_digits)};
-		for (auto digit{offset}; digit < limit; digit += slice_digits) {
-			auto & value{values[digit / value_digits]};
-			auto result{unsigned_cast(value)};
-			result &= ~(mask << (digit % value_digits));
-			result |= (rshift(unsigned_cast(assign), digit - offset) & mask) <<
-			          (digit % value_digits);
-			value = result;
-		}
-		return *this;
-	}
-};
-
-template <integral T, integrals IntsT>
 class ints_access {
 	private:
-	using UT = std::make_unsigned_t<T>;
 	using DataT = base_t<IntsT>;
-	using reference = ints_access_reference<T, IntsT>;
 
-	DataT * values;
+	ints_digits<T, IntsT> values;
 
 	public:
 	static constexpr auto const digits{udigits_v<DataT> * size_v<IntsT>};
@@ -251,14 +195,14 @@ class ints_access {
 	}
 
 	constexpr ints_access(IntsT & values) noexcept :
-	    values{data_p(values)} {}
+	    values{values} {}
 
-	constexpr T operator [](std::size_t const i) const noexcept {
-		return reference{this->values, i};
+	constexpr T operator [](std::ptrdiff_t const i) const noexcept {
+		return values[i * signed_cast(udigits_v<T>)];
 	}
 
-	constexpr auto operator [](std::size_t const i) noexcept {
-		return reference{this->values, i};
+	constexpr auto operator [](std::ptrdiff_t const i) noexcept {
+		return values[i * signed_cast(udigits_v<T>)];
 	}
 };
 
@@ -266,20 +210,19 @@ template <integral T, integrals IntsT>
 struct ints_bisect_reference {
 	using UT = std::make_unsigned_t<T>;
 
-	static constexpr auto const digits{digits_v<UT> / 2};
+	static constexpr std::ptrdiff_t const digits{digits_v<UT> / 2};
 	static constexpr auto const mask{(UT{1} << digits) - 1};
 
-	ints_access<T, IntsT> values;
-	std::size_t const i;
+	ints_digits<T, IntsT> values;
+	std::ptrdiff_t const i;
 
 	constexpr operator T() const noexcept {
-		return (unsigned_cast(values[i / 2]) >> (digits * (i % 2))) & mask;
+		return unsigned_cast(values[i * digits]) & mask;
 	}
 
 	constexpr ints_bisect_reference & operator =(T const assign) noexcept {
-		values[i / 2] =
-			(unsigned_cast<T>(values[i / 2]) & ~(mask << (digits * (i % 2)))) |
-			((unsigned_cast(assign) & mask) << (digits * (i % 2)));
+		values[i * digits] = (unsigned_cast<T>(values[i * digits]) & ~mask) |
+		                     (unsigned_cast(assign) & mask);
 		return *this;
 	}
 };
@@ -287,23 +230,28 @@ struct ints_bisect_reference {
 
 template <integral T, integrals IntsT>
 struct ints_bisect {
+	private:
 	using UT = std::make_unsigned_t<T>;
-
 	using reference = ints_bisect_reference<T, IntsT>;
 
+	ints_digits<T, IntsT> values;
+
+	public:
 	static constexpr auto const digits{udigits_v<T> / 2};
 
-	ints_access<T, IntsT> values;
+
+	constexpr ints_bisect(IntsT & values) noexcept :
+	    values{values} {}
 
 	constexpr std::size_t size() const noexcept {
 		return cdiv(values.digits, digits);
 	}
 
-	constexpr T operator [](std::size_t const i) const noexcept {
+	constexpr T operator [](std::ptrdiff_t const i) const noexcept {
 		return reference{this->values, i};
 	}
 
-	constexpr auto operator [](std::size_t const i) noexcept {
+	constexpr auto operator [](std::ptrdiff_t const i) noexcept {
 		return reference{this->values, i};
 	}
 };

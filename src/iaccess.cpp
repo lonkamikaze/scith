@@ -98,6 +98,9 @@ static_assert(        0 == lrshift<uint64_t>(0xff, -100));
 
 template <integral T, integral ... ExpectTs>
 constexpr bool expect(auto const & values, ExpectTs const ... expects) {
+	if (access_as<T>(values)[-1] || bisect_as<T>(values)[-1]) {
+		return false;
+	}
 	auto access{begin(access_as<T>(values))};
 	auto bisect{begin(bisect_as<T>(values))};
 	auto const bslice{udigits_v<T> / 2};
