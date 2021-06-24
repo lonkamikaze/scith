@@ -408,28 +408,28 @@ constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
 }
 
 template <integer_compatible LT, integer_compatible RT>
-constexpr auto operator /(LT const & lop, RT const & rop) {
+constexpr auto operator /(LT const & num, RT const & denom) noexcept {
 	return integer<select_common_value_t<LT, RT>, digits_v<LT>>{};
 }
 
 template <integer_compatible LT, integer_compatible RT>
-constexpr auto operator %(LT const & lop, RT const & rop) {
+constexpr auto operator %(LT const & num, RT const & denom) noexcept {
 	return integer<select_common_value_t<LT, RT>, min_digits_v<LT, RT>>{};
 }
 
 template <integer_compatible T>
-constexpr auto operator <<(T const & lop, int const rop) {
+constexpr T operator <<(T const & lop, int const rop) noexcept {
 	return T{};
 }
 
 template <integer_compatible T>
-constexpr auto operator >>(T const & lop, int const rop) {
+constexpr T operator >>(T const & lop, int const rop) noexcept {
 	return T{};
 }
 
 template <integer_variant T>
 requires signed_integral<value_t<T>>
-constexpr auto abs(T const & value) {
+constexpr auto abs(T const & value) noexcept {
 	using uvalue = std::make_unsigned_t<value_t<T>>;
 	integer<uvalue, digits_v<T> + 1> result{};
 	auto slices{access_as<uvalue>(result)};
@@ -450,43 +450,44 @@ constexpr auto abs(T const & value) {
 
 template <integer_variant T>
 requires unsigned_integral<value_t<T>>
-constexpr auto abs(T value) {
+constexpr auto abs(T value) noexcept {
 	return value;
 }
 
 template <integer_variant ResultT>
-constexpr ResultT select(int const i) {
+constexpr ResultT select(int const i) noexcept {
 	return {};
 }
 
 template <integer_variant ResultT,
           integer_compatible HeadT, integer_compatible ... TailTs>
-constexpr ResultT select(int const i, HeadT const & head, TailTs const & ... tail) {
+constexpr ResultT
+select(int const i, HeadT const & head, TailTs const & ... tail) noexcept {
 	return i == sizeof...(tail)
 	       ? ResultT{ctag::narrowing, head}
 	       : select<ResultT>(i, tail ...);
 }
 
 template <int IV>
-constexpr int index_of_max(integer_compatible auto const &) {
+constexpr int index_of_max(integer_compatible auto const &) noexcept {
 	return IV;
 }
 
 template <int IV>
 constexpr int index_of_max(integer_compatible auto const & lhs,
                            integer_compatible auto const & rhs,
-                           integer_compatible auto const & ... tail) {
+                           integer_compatible auto const & ... tail) noexcept {
 	return lhs >= rhs
 	       ? index_of_max<IV>(lhs, tail ...)
 	       : index_of_max<sizeof...(tail)>(rhs, tail ...);
 }
 
-constexpr int index_of_max(integer_compatible auto const & ... values) {
+constexpr int index_of_max(integer_compatible auto const & ... values) noexcept {
 	return index_of_max<sizeof...(values) - 1>(values ...);
 }
 
 template <integer_compatible ... Ts>
-constexpr auto max(Ts const & ... values) {
+constexpr auto max(Ts const & ... values) noexcept {
 	/* if there is at least one unsigned value the result
 	 * must be positive, so return an unsigned integer */
 	using value = make_unsigned_if_t<has_unsigned_v<value_t<Ts> ...>,
@@ -496,25 +497,25 @@ constexpr auto max(Ts const & ... values) {
 }
 
 template <int IV>
-constexpr int index_of_min(integer_compatible auto const &) {
+constexpr int index_of_min(integer_compatible auto const &) noexcept {
 	return IV;
 }
 
 template <int IV>
 constexpr int index_of_min(integer_compatible auto const & lhs,
                            integer_compatible auto const & rhs,
-                           integer_compatible auto const & ... tail) {
+                           integer_compatible auto const & ... tail) noexcept {
 	return lhs <= rhs
 	       ? index_of_min<IV>(lhs, tail ...)
 	       : index_of_min<sizeof...(tail)>(rhs, tail ...);
 }
 
-constexpr int index_of_min(integer_compatible auto const & ... values) {
+constexpr int index_of_min(integer_compatible auto const & ... values) noexcept {
 	return index_of_min<sizeof...(values) - 1>(values ...);
 }
 
 template <integer_compatible ... Ts>
-constexpr auto min(Ts const & ... values) {
+constexpr auto min(Ts const & ... values) noexcept {
 	using value = select_common_value_t<Ts ...>;
 	constexpr auto const digits{max_digits_v<Ts ...>};
 	return select<integer<value, digits>>(index_of_min(values ...), values ...);
