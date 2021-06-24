@@ -87,14 +87,99 @@ constexpr T gcd(T const lhs, T const rhs) noexcept {
 }
 
 template <unsigned_integral T>
-constexpr T lshift(T const value, unsigned shift) noexcept {
+constexpr T lshift(T const value, unsigned const shift) noexcept {
 	return shift < udigits_v<T> ? value << shift : 0;
 }
 
 template <unsigned_integral T>
-constexpr T rshift(T const value, unsigned shift) noexcept {
+constexpr T rshift(T const value, unsigned const shift) noexcept {
 	return shift < udigits_v<T> ? value >> shift : 0;
 }
+
+template <unsigned_integral T>
+constexpr T lrshift(T const value, int const shift) noexcept {
+	return shift >= 0 ? lshift<T>(value, shift) : rshift<T>(value, -shift);
+}
+
+template <integral T, integrals IntsT>
+class ints_digits_reference {
+	private:
+	using UT = std::make_unsigned_t<T>;
+	using DataT = base_t<IntsT>;
+	using UDataT = std::make_unsigned_t<DataT>;
+
+	static constexpr std::ptrdiff_t const access_digits{udigits_v<T>};
+	static constexpr std::ptrdiff_t const value_digits{udigits_v<DataT>};
+	static constexpr std::ptrdiff_t const values_size{size_v<IntsT>};
+	static constexpr std::ptrdiff_t const values_digits{values_size * value_digits};
+
+	DataT * values;
+	std::ptrdiff_t i;
+
+	public:
+	constexpr ints_digits_reference(DataT * const values, std::ptrdiff_t const i) noexcept :
+	    values{values}, i{i} {}
+
+	constexpr operator T() const noexcept {
+		auto const start{max(0, i)};
+		auto const limit{min(i + access_digits, values_digits)};
+		UT result{lshift<UT>(-(values[values_size - 1] < 0),
+		                     max(0, values_digits - i))};
+		for (auto digit{start}; digit < limit;
+		     digit += value_digits - digit % value_digits) {
+			auto const uvalue{unsigned_cast(values[digit / value_digits])};
+			result |= lrshift(unsigned_cast(uvalue + UT{0}),
+			                  digit - i - (digit % value_digits));
+		}
+		return result;
+	}
+
+	constexpr ints_digits_reference & operator =(T const assign) noexcept {
+		auto const start{max(0, i)};
+		auto const limit{min(i + access_digits, values_digits)};
+		auto uassign{rshift<UT>(assign, max(0, -i))};
+		auto mask   {rshift<UT>(-1,     max(0, -i))};
+		for (auto digit{start}; digit < limit;
+		     digit += value_digits - digit % value_digits) {
+			auto const shift{digit % value_digits};
+			auto uvalue{unsigned_cast(values[digit / value_digits])};
+			uvalue &= ~(static_cast<UDataT>(mask) << shift);
+			values[digit / value_digits] = uvalue | (static_cast<UDataT>(uassign) << shift);
+			uassign = rshift(uassign, value_digits - shift);
+			mask    = rshift(mask,    value_digits - shift);
+		}
+		return *this;
+	}
+};
+
+
+template <integral T, integrals IntsT>
+class ints_digits {
+	private:
+	using UT = std::make_unsigned_t<T>;
+	using DataT = base_t<IntsT>;
+	using reference = ints_digits_reference<T, IntsT>;
+
+	DataT * values;
+
+	public:
+	static constexpr auto const digits{udigits_v<DataT> * size_v<IntsT>};
+
+	static constexpr auto size() noexcept {
+		return digits;
+	}
+
+	constexpr ints_digits(IntsT & values) noexcept :
+	    values{data_p(values)} {}
+
+	constexpr T operator [](std::ptrdiff_t const i) const noexcept {
+		return reference{this->values, i};
+	}
+
+	constexpr auto operator [](std::ptrdiff_t const i) noexcept {
+		return reference{this->values, i};
+	}
+};
 
 template <integral T, integrals IntsT>
 class ints_access_reference {
@@ -222,6 +307,11 @@ struct ints_bisect {
 		return reference{this->values, i};
 	}
 };
+
+template <integral T, integrals IntsT>
+constexpr ints_digits<T, IntsT> digits_as(IntsT & values) noexcept {
+	return {values};
+}
 
 template <integral T, integrals IntsT>
 constexpr ints_access<T, IntsT> access_as(IntsT & values) noexcept {
