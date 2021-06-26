@@ -16,6 +16,12 @@ struct value_type<T, std::void_t<typename T::value_type>> {
 template <typename T>
 using value_t = typename value_type<T>::type;
 
+template <typename T>
+using uvalue_t = std::make_unsigned_t<value_t<T>>;
+
+template <typename T>
+using svalue_t = std::make_signed_t<value_t<T>>;
+
 template <typename T, class = void>
 struct values_type { using type = T; };
 

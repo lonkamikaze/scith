@@ -332,19 +332,16 @@ constexpr bool operator ==(LT const & lop, RT const & rop) noexcept {
 
 template <integer_variant T>
 constexpr auto operator +(T const & op) noexcept {
-	using value  = value_t<T>;
-	using svalue = std::make_signed_t<value>;
-	return integer<svalue, digits_v<T>>{op};
+	return integer<svalue_t<T>, digits_v<T>>{op};
 }
 
 template <integer_variant T>
 constexpr auto operator -(T const & op) noexcept {
 	using value  = value_t<T>;
-	using svalue = std::make_signed_t<value>;
-	using uvalue = std::make_unsigned_t<value>;
+	using uvalue = uvalue_t<T>;
 	auto const vop{access_as<uvalue>(op)};
 
-	integer<svalue, digits_v<T> + std::is_signed_v<value>> result;
+	integer<svalue_t<T>, digits_v<T> + std::is_signed_v<value>> result;
 	uvalue carry{1};
 	for (std::size_t i{0}; i < result.size(); ++i) {
 		result[i] = ~vop[i] + carry;
