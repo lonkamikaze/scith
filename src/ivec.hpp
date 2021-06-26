@@ -135,6 +135,12 @@ constexpr auto bisect_as(IntsT & value) {
 	return bisect_as<T>(value.values);
 }
 
+template <integer_variant T>
+constexpr T & clonesign(T & dst, auto const & src) {
+	digits_as<value_t<T>>(dst)[T::digits] = -(signed_integral<value_t<T>> && src < 0);
+	return dst;
+}
+
 template <integral BaseT, std::size_t DigitsV>
 template <integer_compatible T>
 constexpr integer<BaseT, DigitsV>::
@@ -143,6 +149,7 @@ integer(ctag::narrowing_type, T const & value) noexcept : values{} {
 	for (std::size_t i{0}; i < size(); ++i) {
 		this->values[i] = values[i];
 	}
+	clonesign(*this, value);
 }
 
 template <integral BaseT, std::size_t DigitsV>

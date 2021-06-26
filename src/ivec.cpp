@@ -364,6 +364,48 @@ static_assert( isnan(sint<24>{ctag::raw, 0xccffffff}));
 static_assert( isnan(sint<24>{ctag::raw, 0x55ffffff}));
 static_assert( isnan(sint<24>{ctag::raw, 0x80ffffff}));
 
+/* narrowing */
+
+static_assert( isnan(uint<24>{ctag::raw,       0x12345678}));
+static_assert(!isnan(uint<24>{ctag::narrowing, 0x12345678}));
+static_assert(expect(uint<24>{ctag::narrowing, 0x12345678}, 0x00345678));
+static_assert( isnan(sint<24>{ctag::raw,       0x12345678}));
+static_assert(!isnan(sint<24>{ctag::narrowing, 0x12345678}));
+static_assert(expect(sint<24>{ctag::narrowing, 0x12345678}, 0x00345678));
+
+static_assert( isnan(uint<24>{ctag::raw,       static_cast<int32_t>(0x87654321)}));
+static_assert(!isnan(uint<24>{ctag::narrowing, static_cast<int32_t>(0x87654321)}));
+static_assert(expect(uint<24>{ctag::narrowing, static_cast<int32_t>(0x87654321)}, 0x00654321));
+static_assert( isnan(sint<24>{ctag::raw,       static_cast<int32_t>(0x87654321)}));
+static_assert(!isnan(sint<24>{ctag::narrowing, static_cast<int32_t>(0x87654321)}));
+static_assert(expect(sint<24>{ctag::narrowing, static_cast<int32_t>(0x87654321)}, 0xff654321));
+
+static_assert( isnan(uint<48>{ctag::raw,       0x9abcdef0, 0x12345678}));
+static_assert(!isnan(uint<48>{ctag::narrowing, 0x123456789abcdef0}));
+static_assert(expect(uint<48>{ctag::narrowing, 0x123456789abcdef0},      0x9abcdef0, 0x00005678));
+static_assert(!isnan(uint<48>{ctag::narrowing, 0x123456789abcdef0_ivec}));
+static_assert(expect(uint<48>{ctag::narrowing, 0x123456789abcdef0_ivec}, 0x9abcdef0, 0x00005678));
+static_assert( isnan(sint<48>{ctag::raw,       0x9abcdef0, 0x12345678}));
+static_assert(!isnan(sint<48>{ctag::narrowing, 0x123456789abcdef0}));
+static_assert(expect(sint<48>{ctag::narrowing, 0x123456789abcdef0},      0x9abcdef0, 0x00005678));
+static_assert(!isnan(sint<48>{ctag::narrowing, 0x123456789abcdef0_ivec}));
+static_assert(expect(sint<48>{ctag::narrowing, 0x123456789abcdef0_ivec}, 0x9abcdef0, 0x00005678));
+
+static_assert( isnan(uint<48>{ctag::raw,       0x76543210, 0xfedcba98}));
+static_assert(!isnan(uint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)}));
+static_assert(expect(uint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)},
+                     0x76543210, 0x0000ba98));
+static_assert(!isnan(uint<48>{ctag::narrowing, -0x123456789abcdf0_ivec}));
+static_assert(expect(uint<48>{ctag::narrowing, -0x123456789abcdf0_ivec},
+                     0x76543210, 0x0000ba98));
+static_assert( isnan(sint<48>{ctag::raw,       0x76543210, 0xfedcba98}));
+static_assert(!isnan(sint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)}));
+static_assert(expect(sint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)},
+                     0x76543210, 0xffffba98));
+static_assert(!isnan(sint<48>{ctag::narrowing, -0x123456789abcdf0_ivec}));
+static_assert(expect(sint<48>{ctag::narrowing, -0x123456789abcdf0_ivec},
+                     0x76543210, 0xffffba98));
+
 /* comparison */
 
 static_assert( ( 123_ivec8 ==  123));
