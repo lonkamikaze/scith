@@ -544,6 +544,8 @@ namespace std {
 template <scith::ivec::integer_variant T>
 struct numeric_limits<T> : numeric_limits<scith::traits::value_t<T>> {
 	static constexpr auto const digits{T::digits};
+	static constexpr auto const digits10{digits * 1000 / 3322};
+	static constexpr auto const max_digits10{scith::ivec::cdiv(digits * 1000, 3321)};
 };
 
 template <scith::ivec::integer_variant T>
