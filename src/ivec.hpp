@@ -135,11 +135,23 @@ constexpr auto bisect_as(IntsT & value) {
 	return bisect_as<T>(value.values);
 }
 
-template <integer_variant T>
+template <integer_variant T> requires signed_integral<value_t<T>>
 constexpr T & clonesign(T & dst, auto const & src) {
-	digits_as<value_t<T>>(dst)[T::digits] = -(signed_integral<value_t<T>> && src < 0);
-	return dst;
+	return digits_as<value_t<T>>(dst)[T::digits] = -(src < 0), dst;
 }
+
+template <integer_variant T> requires unsigned_integral<value_t<T>>
+constexpr T & clonesign(T & dst, auto const &) {
+	return digits_as<value_t<T>>(dst)[T::digits] = 0, dst;
+}
+
+template <integer_variant T> requires unsigned_integral<value_t<T>>
+constexpr T & fix_pad_if_unsigned(T & value) {
+	return digits_as<value_t<T>>(value)[T::digits] = 0, value;
+}
+
+template <integer_variant T> requires signed_integral<value_t<T>>
+constexpr T & fix_pad_if_unsigned(T & value) { return value; }
 
 template <integral BaseT, std::size_t DigitsV>
 template <integer_compatible T>
@@ -355,6 +367,15 @@ constexpr auto operator -(T const & op) noexcept {
 		carry &= !vop[i];
 	}
 	return result;
+}
+
+template <integer_variant T>
+constexpr auto operator ~(T const & op) noexcept {
+	T result{};
+	for (std::size_t i{0}; i < op.size(); ++i) {
+		result[i] = ~unsigned_cast(op[i]);
+	}
+	return fix_pad_if_unsigned(result);
 }
 
 template <integer_compatible LT, integer_compatible RT>
