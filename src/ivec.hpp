@@ -16,6 +16,7 @@ namespace scith::ivec {
 using namespace scith::itraits;
 using namespace scith::traits;
 using iaccess::integrals;
+using iaccess::digits_as;
 using iaccess::access_as;
 using iaccess::bisect_as;
 
@@ -118,6 +119,11 @@ using select_common_t = typename select_common_type<Ts ...>::type;
 
 template <integer_compatible ... Ts>
 using select_common_value_t = select_common_t<value_t<Ts> ...>;
+
+template <integral T, integer_variant IntsT>
+constexpr auto digits_as(IntsT & value) {
+	return digits_as<T>(value.values);
+}
 
 template <integral T, integer_variant IntsT>
 constexpr auto access_as(IntsT & value) {
@@ -296,6 +302,12 @@ constexpr auto operator ""_ivec64() noexcept {
 }
 
 } /* namespace literals */
+
+template <integer_compatible T>
+constexpr bool isnan(T const & value) {
+	auto const top{digits_as<value_t<T>>(value)[T::digits]};
+	return (top != 0) && (top != -signed_integral<value_t<T>>);
+}
 
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator <=>(LT const & lop, RT const & rop) noexcept {

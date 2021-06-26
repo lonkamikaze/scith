@@ -344,6 +344,26 @@ static_assert(expect(0xf4240_ivec8, 0x40, 0x42, 0x0f));
 static_assert(expect(0Xf4240_ivec16, 0x4240, 0x000f));
 static_assert(expect(0xfFfFfFfFfFfFfFfF_ivec16, 0xffff, 0xffff, 0xffff, 0xffff));
 
+/* isnan */
+
+static_assert(!isnan(uint<24>{ctag::raw, 0x00ffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0x01ffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0x0fffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0xffffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0xff000000}));
+static_assert( isnan(uint<24>{ctag::raw, 0xccffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0x55ffffff}));
+static_assert( isnan(uint<24>{ctag::raw, 0x80ffffff}));
+
+static_assert(!isnan(sint<24>{ctag::raw, 0x00ffffff}));
+static_assert( isnan(sint<24>{ctag::raw, 0x01ffffff}));
+static_assert( isnan(sint<24>{ctag::raw, 0x0fffffff}));
+static_assert(!isnan(sint<24>{ctag::raw, 0xffffffff}));
+static_assert(!isnan(sint<24>{ctag::raw, 0xff000000}));
+static_assert( isnan(sint<24>{ctag::raw, 0xccffffff}));
+static_assert( isnan(sint<24>{ctag::raw, 0x55ffffff}));
+static_assert( isnan(sint<24>{ctag::raw, 0x80ffffff}));
+
 /* comparison */
 
 static_assert( ( 123_ivec8 ==  123));
