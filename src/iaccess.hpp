@@ -81,23 +81,18 @@ struct base_type<std::array<T, CountV> const> : base_type<T const> {};
 template <integrals T>
 using base_t = typename base_type<T>::type;
 
-template <integral T>
-constexpr T gcd(T const lhs, T const rhs) noexcept {
-	return rhs ? gcd(rhs, lhs % rhs) : lhs;
-}
-
 template <unsigned_integral T>
-constexpr T lshift(T const value, unsigned const shift) noexcept {
+constexpr T lshift(T const value, std::size_t const shift) noexcept {
 	return shift < udigits_v<T> ? value << shift : 0;
 }
 
 template <unsigned_integral T>
-constexpr T rshift(T const value, unsigned const shift) noexcept {
+constexpr T rshift(T const value, std::size_t const shift) noexcept {
 	return shift < udigits_v<T> ? value >> shift : 0;
 }
 
 template <unsigned_integral T>
-constexpr T lrshift(T const value, int const shift) noexcept {
+constexpr T lrshift(T const value, std::ptrdiff_t const shift) noexcept {
 	return shift >= 0 ? lshift<T>(value, shift) : rshift<T>(value, -shift);
 }
 
