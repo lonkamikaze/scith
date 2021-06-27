@@ -84,6 +84,8 @@ struct integer {
 
 	constexpr BaseT * data() noexcept { return values.data(); }
 	constexpr BaseT const * data() const noexcept { return values.data(); }
+
+	explicit constexpr operator bool() const noexcept { return *this != 0; }
 };
 
 template <integral LT, integral RT>

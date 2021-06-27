@@ -111,6 +111,9 @@ using uint = integer<uint32_t, DigitsV>;
 template <std::size_t DigitsV>
 using sint = integer<int32_t, DigitsV>;
 
+static_assert(std::is_same_v<    bool, decltype(!uint<16>{})>);
+static_assert(std::is_same_v<    bool, decltype(!sint<16>{})>);
+
 static_assert(std::is_same_v<sint<16>, decltype(+uint<16>{})>);
 static_assert(std::is_same_v<sint<16>, decltype(+sint<16>{})>);
 
@@ -464,6 +467,14 @@ static_assert( (-123_ivec8 >= -123));
 static_assert( (-123_ivec8 >= -124));
 static_assert(!(-123_ivec8 >=  123));
 static_assert( (   0_ivec8 >=    0));
+
+/* operator bool() */
+
+static_assert(! 0_ivec);
+static_assert(  1_ivec);
+static_assert( -1_ivec);
+static_assert(  0x123456781234567811234_ivec);
+static_assert( -0x123456781234567811234_ivec);
 
 /* operator ~ */
 
