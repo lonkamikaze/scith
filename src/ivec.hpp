@@ -41,10 +41,10 @@ concept integer_variant = is_integer_variant_v<T>;
 template <typename T>
 concept integer_compatible = integer_variant<T> || integral<T>;
 
-struct ctag {
+namespace ctag {
 	static constexpr struct raw_type {} const raw{};
 	static constexpr struct narrowing_type {} const narrowing{};
-};
+} /* namespace ctag */
 
 template <integral T, std::size_t DigitsV>
 constexpr std::size_t const count_of_v{
@@ -550,18 +550,18 @@ constexpr auto abs(T value) noexcept {
 	return value;
 }
 
-template <integer_variant ResultT>
+template <integer_variant ResultT, class ...>
 constexpr ResultT select(int const i) noexcept {
 	return {};
 }
 
-template <integer_variant ResultT,
+template <integer_variant ResultT, class ... TagT,
           integer_compatible HeadT, integer_compatible ... TailTs>
 constexpr ResultT
 select(int const i, HeadT const & head, TailTs const & ... tail) noexcept {
 	return i == sizeof...(tail)
-	       ? ResultT{ctag::narrowing, head}
-	       : select<ResultT>(i, tail ...);
+	       ? ResultT{TagT{} ..., head}
+	       : select<ResultT, TagT ...>(i, tail ...);
 }
 
 template <int IV>
@@ -589,7 +589,8 @@ constexpr auto max(Ts const & ... values) noexcept {
 	using value = make_unsigned_if_t<has_unsigned_v<value_t<Ts> ...>,
 	                                 select_common_value_t<Ts ...>>;
 	constexpr auto const digits{max_digits_v<Ts ...>};
-	return select<integer<value, digits>>(index_of_max(values ...), values ...);
+	return select<integer<value, digits>, ctag::narrowing_type>
+	             (index_of_max(values ...), values ...);
 }
 
 template <int IV>
