@@ -401,6 +401,53 @@ constexpr T operator >>(T const & value, std::ptrdiff_t const rshift) noexcept {
 }
 
 template <integer_compatible LT, integer_compatible RT>
+constexpr auto operator &(LT const & lhs, RT const & rhs) noexcept {
+	using value =
+	    make_unsigned_if_t<(unsigned_integral<value_t<LT>> && digits_v<LT> <= digits_v<RT>) ||
+	                       (unsigned_integral<value_t<RT>> && digits_v<RT> <= digits_v<LT>),
+	                       select_common_value_t<LT, RT>>;
+	using uvalue = std::make_unsigned_t<value>;
+	constexpr auto const digits{
+		signed_integral<value>
+		? max_digits_v<LT, RT>
+		: min_digits_v<LT, RT>
+	};
+	integer<value, digits> result;
+	auto const && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < result.size(); ++i) {
+		result[i] = lvals[i] & rvals[i];
+	}
+	return result;
+}
+
+template <integer_compatible LT, integer_compatible RT>
+constexpr auto operator |(LT const & lhs, RT const & rhs) noexcept {
+	using value = select_common_value_t<LT, RT>;
+	using uvalue = std::make_unsigned_t<value>;
+	integer<value, max_digits_v<LT, RT>> result;
+	auto && lvals{access_as<uvalue>(lhs)};
+	auto && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < result.size(); ++i) {
+		result[i] = lvals[i] | rvals[i];
+	}
+	return result;
+}
+
+template <integer_compatible LT, integer_compatible RT>
+constexpr auto operator ^(LT const & lhs, RT const & rhs) noexcept {
+	using value = select_common_value_t<LT, RT>;
+	using uvalue = std::make_unsigned_t<value>;
+	integer<value, max_digits_v<LT, RT>> result;
+	auto && lvals{access_as<uvalue>(lhs)};
+	auto && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < result.size(); ++i) {
+		result[i] = lvals[i] ^ rvals[i];
+	}
+	return result;
+}
+
+template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator +(LT const & lop, RT const & rop) noexcept {
 	using value = select_common_value_t<LT, RT>;
 	using uvalue = std::make_unsigned_t<value>;

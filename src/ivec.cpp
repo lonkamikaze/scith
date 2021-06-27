@@ -133,6 +133,51 @@ static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} >> -16)>);
 static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} >>  16)>);
 static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} >> -16)>);
 
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} & uint<16>{})>);
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} & sint<16>{})>);
+static_assert(std::is_same_v<uint<16>, decltype(sint<16>{} & uint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} & sint<16>{})>);
+
+static_assert(std::is_same_v<uint< 8>, decltype(uint<24>{} & uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(uint<24>{} & sint< 8>{})>);
+static_assert(std::is_same_v<uint< 8>, decltype(sint<24>{} & uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint<24>{} & sint< 8>{})>);
+
+static_assert(std::is_same_v<uint< 8>, decltype(uint< 8>{} & uint<24>{})>);
+static_assert(std::is_same_v<uint< 8>, decltype(uint< 8>{} & sint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} & uint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} & sint<24>{})>);
+
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} | uint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(uint<16>{} | sint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} | uint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} | sint<16>{})>);
+
+static_assert(std::is_same_v<uint<24>, decltype(uint<24>{} | uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(uint<24>{} | sint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint<24>{} | uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint<24>{} | sint< 8>{})>);
+
+static_assert(std::is_same_v<uint<24>, decltype(uint< 8>{} | uint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(uint< 8>{} | sint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} | uint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} | sint<24>{})>);
+
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} ^ uint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(uint<16>{} ^ sint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} ^ uint<16>{})>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} ^ sint<16>{})>);
+
+static_assert(std::is_same_v<uint<24>, decltype(uint<24>{} ^ uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(uint<24>{} ^ sint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint<24>{} ^ uint< 8>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint<24>{} ^ sint< 8>{})>);
+
+static_assert(std::is_same_v<uint<24>, decltype(uint< 8>{} ^ uint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(uint< 8>{} ^ sint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} ^ uint<24>{})>);
+static_assert(std::is_same_v<sint<24>, decltype(sint< 8>{} ^ sint<24>{})>);
+
 static_assert(std::is_same_v<uint<17>, decltype(uint<16>{} + uint<16>{})>);
 static_assert(std::is_same_v<sint<17>, decltype(uint<16>{} + sint<16>{})>);
 static_assert(std::is_same_v<sint<17>, decltype(sint<16>{} + uint<16>{})>);
@@ -537,6 +582,57 @@ static_assert( 0x12345678_ivec32 ==   0x2468acf0_ivec32  >> 1);
 static_assert( 0x2468acf0_ivec32 ==   0x12345678_ivec32  << 1);
 static_assert(-0x12345678_ivec32 == (-0x2468acf0_ivec32) >> 1);
 static_assert(-0x2468acf0_ivec32 == (-0x12345678_ivec32) << 1);
+
+/* operator & */
+
+static_assert( 0x123456789abcdef_ivec == (  0x123456789abcdef_ivec  & -     1_ivec));
+static_assert(                 0_ivec == (  0x123456789abcdef_ivec  &       0_ivec));
+static_assert( 0x00000000000ffff_ivec == ((-0x000000000000001_ivec) &  0xffff_ivec));
+static_assert( 0xfffffffffffffff_ivec == (  0xfffffffffffffff_ivec  & -   0b1_ivec));
+static_assert(-                1_ivec == ((-0x000000000000001_ivec) & -   0b1_ivec));
+
+static_assert( 0x1030507090b0d0f_ivec == (  0xf0f0f0f0f0f0f0f_ivec  &  0x123456789abcdef_ivec));
+static_assert( 0xe0c0a0806040201_ivec == (  0xf0f0f0f0f0f0f0f_ivec  & -0x123456789abcdef_ivec));
+static_assert( 0x020406080a0c0e1_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) &  0x123456789abcdef_ivec));
+static_assert(-0xf2f4f6f8fafcfef_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) & -0x123456789abcdef_ivec));
+static_assert( 0x1030507090b0d0f_ivec == (  0x123456789abcdef_ivec  &  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0x020406080a0c0e1_ivec == (  0x123456789abcdef_ivec  & -0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0xe0c0a0806040201_ivec == ((-0x123456789abcdef_ivec) &  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xf2f4f6f8fafcfef_ivec == ((-0x123456789abcdef_ivec) & -0xf0f0f0f0f0f0f0f_ivec));
+
+/* operator | */
+
+static_assert(-                1_ivec == (  0x123456789abcdef_ivec  | -     1_ivec));
+static_assert( 0x123456789abcdef_ivec == (  0x123456789abcdef_ivec  |       0_ivec));
+static_assert(-                1_ivec == ((-0x000000000000001_ivec) |  0xffff_ivec));
+static_assert(-                1_ivec == (  0xfffffffffffffff_ivec  | -   0b1_ivec));
+static_assert(-                1_ivec == ((-0x000000000000001_ivec) | -   0b1_ivec));
+
+static_assert( 0xf2f4f6f8fafcfef_ivec == (  0xf0f0f0f0f0f0f0f_ivec  |  0x123456789abcdef_ivec));
+static_assert(-0x020406080a0c0e1_ivec == (  0xf0f0f0f0f0f0f0f_ivec  | -0x123456789abcdef_ivec));
+static_assert(-0xe0c0a0806040201_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) |  0x123456789abcdef_ivec));
+static_assert(-0x1030507090b0d0f_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) | -0x123456789abcdef_ivec));
+static_assert( 0xf2f4f6f8fafcfef_ivec == (  0x123456789abcdef_ivec  |  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xe0c0a0806040201_ivec == (  0x123456789abcdef_ivec  | -0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0x020406080a0c0e1_ivec == ((-0x123456789abcdef_ivec) |  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0x1030507090b0d0f_ivec == ((-0x123456789abcdef_ivec) | -0xf0f0f0f0f0f0f0f_ivec));
+
+/* operator ^ */
+
+static_assert(- 0x123456789abcdf0_ivec == (  0x123456789abcdef_ivec  ^ -     1_ivec));
+static_assert(  0x123456789abcdef_ivec == (  0x123456789abcdef_ivec  ^       0_ivec));
+static_assert(-           0x10000_ivec == ((-0x000000000000001_ivec) ^  0xffff_ivec));
+static_assert(-0x1000000000000000_ivec == (  0xfffffffffffffff_ivec  ^ -   0b1_ivec));
+static_assert(                  0_ivec == ((-0x000000000000001_ivec) ^ -   0b1_ivec));
+
+static_assert( 0xe2c4a6886a4c2e0_ivec == (  0xf0f0f0f0f0f0f0f_ivec  ^  0x123456789abcdef_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == (  0xf0f0f0f0f0f0f0f_ivec  ^ -0x123456789abcdef_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) ^  0x123456789abcdef_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == ((-0xf0f0f0f0f0f0f0f_ivec) ^ -0x123456789abcdef_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == (  0x123456789abcdef_ivec  ^  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == (  0x123456789abcdef_ivec  ^ -0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == ((-0x123456789abcdef_ivec) ^  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == ((-0x123456789abcdef_ivec) ^ -0xf0f0f0f0f0f0f0f_ivec));
 
 /* operator + */
 
