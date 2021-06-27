@@ -380,6 +380,26 @@ constexpr auto operator ~(T const & op) noexcept {
 	return fix_pad_if_unsigned(result);
 }
 
+template <integer_variant T>
+constexpr T operator <<(T const & value, std::ptrdiff_t const lshift) noexcept {
+	using value_type = value_t<T>;
+	constexpr std::ptrdiff_t const value_digits{udigits_v<value_type>};
+	auto const && values{digits_as<value_type>(value)};
+	T result{};
+	for (std::ptrdiff_t i{0}; i < result.size(); ++i) {
+		result[i] = values[i * value_digits - lshift];
+	}
+	if (lshift > 0) {
+		clonesign(result, value);
+	}
+	return result;
+}
+
+template <integer_variant T>
+constexpr T operator >>(T const & value, std::ptrdiff_t const rshift) noexcept {
+	return value << -rshift;
+}
+
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator +(LT const & lop, RT const & rop) noexcept {
 	using value = select_common_value_t<LT, RT>;
@@ -454,16 +474,6 @@ constexpr auto operator /(LT const & num, RT const & denom) noexcept {
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator %(LT const & num, RT const & denom) noexcept {
 	return integer<select_common_value_t<LT, RT>, min_digits_v<LT, RT>>{};
-}
-
-template <integer_compatible T>
-constexpr T operator <<(T const & lop, int const rop) noexcept {
-	return T{};
-}
-
-template <integer_compatible T>
-constexpr T operator >>(T const & lop, int const rop) noexcept {
-	return T{};
 }
 
 template <integer_variant T>

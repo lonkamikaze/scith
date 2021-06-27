@@ -123,6 +123,16 @@ static_assert(std::is_same_v<sint<17>, decltype(-sint<16>{})>);
 static_assert(std::is_same_v<uint<16>, decltype(~uint<16>{})>);
 static_assert(std::is_same_v<sint<16>, decltype(~sint<16>{})>);
 
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} <<  16)>);
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} << -16)>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} <<  16)>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} << -16)>);
+
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} >>  16)>);
+static_assert(std::is_same_v<uint<16>, decltype(uint<16>{} >> -16)>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} >>  16)>);
+static_assert(std::is_same_v<sint<16>, decltype(sint<16>{} >> -16)>);
+
 static_assert(std::is_same_v<uint<17>, decltype(uint<16>{} + uint<16>{})>);
 static_assert(std::is_same_v<sint<17>, decltype(uint<16>{} + sint<16>{})>);
 static_assert(std::is_same_v<sint<17>, decltype(sint<16>{} + uint<16>{})>);
@@ -502,6 +512,31 @@ static_assert(-  0x100000000000000000000000_ivec == ~+  0xffffffffffffffffffffff
 static_assert(- 0x5555555555555555555555556_ivec == ~+0x5555555555555555555555555_ivec64);
 static_assert(-  0x555555555555555555555556_ivec == ~+ 0x555555555555555555555555_ivec64);
 static_assert(-   0x55555555555555555555556_ivec == ~+  0x55555555555555555555555_ivec64);
+
+/* operator <<, operator >> */
+
+static_assert(  0x765432100_ivec ==   0x876543210_ivec  << 4);
+static_assert(- 0x765432100_ivec == (-0x876543210_ivec) << 4);
+static_assert(  0x000000000_ivec ==   0x876543210_ivec  << 128);
+static_assert(-0x1000000000_ivec == (-0x876543210_ivec) << 128);
+static_assert(- 0x000000001_ivec == (-0x000000001_ivec) >> 1);
+static_assert(- 0x000000001_ivec == (-0x000000001_ivec) >> 128);
+static_assert(  0x00000ffff_ivec ==   0xfffffffff_ivec  >> 20);
+static_assert(- 0x000010000_ivec == (-0xfffffffff_ivec) >> 20);
+
+static_assert(  0x765432100_ivec ==   0x876543210_ivec  >> -4);
+static_assert(- 0x765432100_ivec == (-0x876543210_ivec) >> -4);
+static_assert(  0x000000000_ivec ==   0x876543210_ivec  >> -128);
+static_assert(-0x1000000000_ivec == (-0x876543210_ivec) >> -128);
+static_assert(- 0x000000001_ivec == (-0x000000001_ivec) << -1);
+static_assert(- 0x000000001_ivec == (-0x000000001_ivec) << -128);
+static_assert(  0x00000ffff_ivec ==   0xfffffffff_ivec  << -20);
+static_assert(- 0x000010000_ivec == (-0xfffffffff_ivec) << -20);
+
+static_assert( 0x12345678_ivec32 ==   0x2468acf0_ivec32  >> 1);
+static_assert( 0x2468acf0_ivec32 ==   0x12345678_ivec32  << 1);
+static_assert(-0x12345678_ivec32 == (-0x2468acf0_ivec32) >> 1);
+static_assert(-0x2468acf0_ivec32 == (-0x12345678_ivec32) << 1);
 
 /* operator + */
 
