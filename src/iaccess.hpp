@@ -111,6 +111,27 @@ class ints_digits_reference {
 	DataT * values;
 	std::ptrdiff_t i;
 
+	template <UDataT(* FuncV)(UDataT, UDataT) noexcept>
+	constexpr ints_digits_reference & assign(T const op) noexcept {
+		auto const start{max(0, i)};
+		auto const limit{min(i + access_digits, values_digits)};
+		auto uop {rshift<UT>(op, max(0, -i))};
+		auto mask{rshift<UT>(-1,     max(0, -i))};
+		for (auto digit{start}; digit < limit;) {
+			auto const slice_index {digit / value_digits};
+			auto const slice_offset{digit % value_digits};
+			auto const slice_digits{value_digits - slice_offset};
+			auto uvalue{unsigned_cast(values[slice_index])};
+			UDataT uassign{FuncV(uvalue >> slice_offset, uop)};
+			uvalue &= ~(static_cast<UDataT>(mask) << slice_offset);
+			values[slice_index] = uvalue | (uassign << slice_offset);
+			uop    = rshift(uop,  slice_digits);
+			mask   = rshift(mask, slice_digits);
+			digit += slice_digits;
+		}
+		return *this;
+	}
+
 	public:
 	constexpr ints_digits_reference(DataT * const values, std::ptrdiff_t const i) noexcept :
 	    values{values}, i{i} {}
@@ -120,30 +141,36 @@ class ints_digits_reference {
 		auto const limit{min(i + access_digits, values_digits)};
 		UT result{lshift<UT>(-(values[values_size - 1] < 0),
 		                     max(0, values_digits - i))};
-		for (auto digit{start}; digit < limit;
-		     digit += value_digits - digit % value_digits) {
-			auto const uvalue{unsigned_cast(values[digit / value_digits])};
+		for (auto digit{start}; digit < limit;) {
+			auto const slice_index {digit / value_digits};
+			auto const slice_offset{digit % value_digits};
+			auto const slice_digits{value_digits - slice_offset};
+			auto const uvalue{unsigned_cast(values[slice_index])};
 			result |= lrshift(unsigned_cast(uvalue + UT{0}),
-			                  digit - i - (digit % value_digits));
+			                  digit - i - (slice_offset));
+			digit += slice_digits;
 		}
 		return result;
 	}
 
-	constexpr ints_digits_reference & operator =(T const assign) noexcept {
-		auto const start{max(0, i)};
-		auto const limit{min(i + access_digits, values_digits)};
-		auto uassign{rshift<UT>(assign, max(0, -i))};
-		auto mask   {rshift<UT>(-1,     max(0, -i))};
-		for (auto digit{start}; digit < limit;
-		     digit += value_digits - digit % value_digits) {
-			auto const shift{digit % value_digits};
-			auto uvalue{unsigned_cast(values[digit / value_digits])};
-			uvalue &= ~(static_cast<UDataT>(mask) << shift);
-			values[digit / value_digits] = uvalue | (static_cast<UDataT>(uassign) << shift);
-			uassign = rshift(uassign, value_digits - shift);
-			mask    = rshift(mask,    value_digits - shift);
-		}
-		return *this;
+	constexpr auto & operator =(T const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return r;}};
+		return assign<op>(value);
+	}
+
+	constexpr auto & operator &=(T const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l & r;}};
+		return assign<op>(value);
+	}
+
+	constexpr auto & operator |=(T const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l | r;}};
+		return assign<op>(value);
+	}
+
+	constexpr auto & operator ^=(T const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l ^ r;}};
+		return assign<op>(value);
 	}
 };
 
@@ -202,22 +229,42 @@ class ints_access {
 };
 
 template <integral T, integrals IntsT>
-struct ints_bisect_reference {
+class ints_bisect_reference {
+	private:
 	using UT = std::make_unsigned_t<T>;
-
-	static constexpr std::ptrdiff_t const digits{digits_v<UT> / 2};
-	static constexpr auto const mask{(UT{1} << digits) - 1};
 
 	ints_digits<T, IntsT> values;
 	std::ptrdiff_t const i;
+
+	public:
+	static constexpr std::ptrdiff_t const digits{digits_v<UT> / 2};
+	static constexpr auto const mask{(UT{1} << digits) - 1};
+
+	constexpr ints_bisect_reference(ints_digits<T, IntsT> const values,
+	                                std::ptrdiff_t const i) noexcept :
+	    values{values}, i{i} {}
 
 	constexpr operator T() const noexcept {
 		return unsigned_cast(values[i * digits]) & mask;
 	}
 
-	constexpr ints_bisect_reference & operator =(T const assign) noexcept {
-		values[i * digits] = (unsigned_cast<T>(values[i * digits]) & ~mask) |
-		                     (unsigned_cast(assign) & mask);
+	constexpr auto & operator =(T const value) noexcept {
+		(values[i * digits] &= ~mask) |= (unsigned_cast<T>(value) & mask);
+		return *this;
+	}
+
+	constexpr auto & operator &=(T const value) noexcept {
+		values[i * digits] &= (unsigned_cast<T>(value) | ~mask);
+		return *this;
+	}
+
+	constexpr auto & operator |=(T const value) noexcept {
+		values[i * digits] |= (unsigned_cast<T>(value) & mask);
+		return *this;
+	}
+
+	constexpr auto & operator ^=(T const value) noexcept {
+		values[i * digits] ^= (unsigned_cast<T>(value) & mask);
 		return *this;
 	}
 };

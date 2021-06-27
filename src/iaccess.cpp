@@ -428,6 +428,76 @@ static_assert(0x89abcc5f == dassign< int8_t>( int32,    4, 0xc5));
 static_assert(0x89abcdef == dassign< int8_t>( int32,   56, 0xc5));
 static_assert(0x89abcdef == dassign< int8_t>( int32,  100, 0xc5));
 
+enum class op { bit_and, bit_or, bit_xor, };
+
+template <op OpV, integral T>
+constexpr auto dassign(auto value, std::ptrdiff_t const i, auto const assign) {
+	switch (OpV) {
+	case op::bit_and:
+		digits_as<T>(value)[i] &= assign;
+		break;
+	case op::bit_or:
+		digits_as<T>(value)[i] |= assign;
+		break;
+	case op::bit_xor:
+		digits_as<T>(value)[i] ^= assign;
+		break;
+	}
+	return value;
+}
+
+static_assert(0x1010101010543210 == dassign<op::bit_and, uint64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0xffddbb9977543210 == dassign<op::bit_or , uint64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0xefcdab8967543210 == dassign<op::bit_xor, uint64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0x0101010101abcdef == dassign<op::bit_and, uint64_t>( int64, 24, 0x1111111111111111));
+static_assert(0x1133557799abcdef == dassign<op::bit_or , uint64_t>( int64, 24, 0x1111111111111111));
+static_assert(0x1032547698abcdef == dassign<op::bit_xor, uint64_t>( int64, 24, 0x1111111111111111));
+static_assert(0x1010101010543210 == dassign<op::bit_and,  int64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0xffddbb9977543210 == dassign<op::bit_or ,  int64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0xefcdab8967543210 == dassign<op::bit_xor,  int64_t>(uint64, 24, 0x1111111111111111));
+static_assert(0x0101010101abcdef == dassign<op::bit_and,  int64_t>( int64, 24, 0x1111111111111111));
+static_assert(0x1133557799abcdef == dassign<op::bit_or ,  int64_t>( int64, 24, 0x1111111111111111));
+static_assert(0x1032547698abcdef == dassign<op::bit_xor,  int64_t>( int64, 24, 0x1111111111111111));
+
+static_assert(0xfedcba9876501210 == dassign<op::bit_and,  uint8_t>(uint64, 12, 0x11));
+static_assert(0xfedcba9876553210 == dassign<op::bit_or ,  uint8_t>(uint64, 12, 0x11));
+static_assert(0xfedcba9876552210 == dassign<op::bit_xor,  uint8_t>(uint64, 12, 0x11));
+static_assert(0x0123456789a10def == dassign<op::bit_and,  uint8_t>( int64, 12, 0x11));
+static_assert(0x0123456789abddef == dassign<op::bit_or ,  uint8_t>( int64, 12, 0x11));
+static_assert(0x0123456789aaddef == dassign<op::bit_xor,  uint8_t>( int64, 12, 0x11));
+static_assert(0xfedcba9876501210 == dassign<op::bit_and,   int8_t>(uint64, 12, 0x11));
+static_assert(0xfedcba9876553210 == dassign<op::bit_or ,   int8_t>(uint64, 12, 0x11));
+static_assert(0xfedcba9876552210 == dassign<op::bit_xor,   int8_t>(uint64, 12, 0x11));
+static_assert(0x0123456789a10def == dassign<op::bit_and,   int8_t>( int64, 12, 0x11));
+static_assert(0x0123456789abddef == dassign<op::bit_or ,   int8_t>( int64, 12, 0x11));
+static_assert(0x0123456789aaddef == dassign<op::bit_xor,   int8_t>( int64, 12, 0x11));
+
+static_assert(0x76542200 == dassign<op::bit_and, uint64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x76543232 == dassign<op::bit_or,  uint64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x76541032 == dassign<op::bit_xor, uint64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x89ab0022 == dassign<op::bit_and, uint64_t>( int32, -48, 0x2222222222222222));
+static_assert(0x89abefef == dassign<op::bit_or,  uint64_t>( int32, -48, 0x2222222222222222));
+static_assert(0x89abefcd == dassign<op::bit_xor, uint64_t>( int32, -48, 0x2222222222222222));
+static_assert(0x76542200 == dassign<op::bit_and,  int64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x76543232 == dassign<op::bit_or,   int64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x76541032 == dassign<op::bit_xor,  int64_t>(uint32, -48, 0x2222222222222222));
+static_assert(0x89ab0022 == dassign<op::bit_and,  int64_t>( int32, -48, 0x2222222222222222));
+static_assert(0x89abefef == dassign<op::bit_or,   int64_t>( int32, -48, 0x2222222222222222));
+static_assert(0x89abefcd == dassign<op::bit_xor,  int64_t>( int32, -48, 0x2222222222222222));
+
+static_assert(0x16543210 == dassign<op::bit_and, uint8_t>(uint32, 28, 0x99));
+static_assert(0xf6543210 == dassign<op::bit_or,  uint8_t>(uint32, 28, 0x99));
+static_assert(0xe6543210 == dassign<op::bit_xor, uint8_t>(uint32, 28, 0x99));
+static_assert(0x89abc98f == dassign<op::bit_and, uint8_t>( int32,  4, 0x99));
+static_assert(0x89abcdff == dassign<op::bit_or,  uint8_t>( int32,  4, 0x99));
+static_assert(0x89abc47f == dassign<op::bit_xor, uint8_t>( int32,  4, 0x99));
+static_assert(0x16543210 == dassign<op::bit_and,  int8_t>(uint32, 28, 0x99));
+static_assert(0xf6543210 == dassign<op::bit_or,   int8_t>(uint32, 28, 0x99));
+static_assert(0xe6543210 == dassign<op::bit_xor,  int8_t>(uint32, 28, 0x99));
+static_assert(0x89abc98f == dassign<op::bit_and,  int8_t>( int32,  4, 0x99));
+static_assert(0x89abcdff == dassign<op::bit_or,   int8_t>( int32,  4, 0x99));
+static_assert(0x89abc47f == dassign<op::bit_xor,  int8_t>( int32,  4, 0x99));
+
 static_assert(expect<uint64_t>(uint64, 0xfedcba9876543210,  0,  0));
 static_assert(expect< int64_t>(uint64, 0xfedcba9876543210,  0,  0));
 static_assert(expect<uint64_t>(uint32,         0x76543210,  0,  0));
@@ -569,6 +639,74 @@ static_assert(assign< int32_t>(uint16, 0xffffffff));
 static_assert(assign< int32_t>(uint16,          0));
 static_assert(assign< int32_t>( int16, 0xffffffff));
 static_assert(assign< int32_t>( int16,          0));
+
+template <op OpV, integral T>
+constexpr auto bassign(auto value, std::ptrdiff_t const i, auto const assign) {
+	switch (OpV) {
+	case op::bit_and:
+		bisect_as<T>(value)[i] &= assign;
+		break;
+	case op::bit_or:
+		bisect_as<T>(value)[i] |= assign;
+		break;
+	case op::bit_xor:
+		bisect_as<T>(value)[i] ^= assign;
+		break;
+	}
+	return value;
+}
+
+static_assert(0xfedcba9810101010 == bassign<op::bit_and, uint64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0xfedcba9877553311 == bassign<op::bit_or,  uint64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0xfedcba9867452301 == bassign<op::bit_xor, uint64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0x0123456701010101 == bassign<op::bit_and, uint64_t>( int64, 0, 0x1111111111111111));
+static_assert(0x0123456799bbddff == bassign<op::bit_or , uint64_t>( int64, 0, 0x1111111111111111));
+static_assert(0x0123456798badcfe == bassign<op::bit_xor, uint64_t>( int64, 0, 0x1111111111111111));
+static_assert(0xfedcba9810101010 == bassign<op::bit_and,  int64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0xfedcba9877553311 == bassign<op::bit_or,   int64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0xfedcba9867452301 == bassign<op::bit_xor,  int64_t>(uint64, 0, 0x1111111111111111));
+static_assert(0x0123456701010101 == bassign<op::bit_and,  int64_t>( int64, 0, 0x1111111111111111));
+static_assert(0x0123456799bbddff == bassign<op::bit_or ,  int64_t>( int64, 0, 0x1111111111111111));
+static_assert(0x0123456798badcfe == bassign<op::bit_xor,  int64_t>( int64, 0, 0x1111111111111111));
+
+static_assert(0xfedcba9876541210 == bassign<op::bit_and,  uint8_t>(uint64, 3, 0x11));
+static_assert(0xfedcba9876543210 == bassign<op::bit_or ,  uint8_t>(uint64, 3, 0x11));
+static_assert(0xfedcba9876542210 == bassign<op::bit_xor,  uint8_t>(uint64, 3, 0x11));
+static_assert(0x0123456789ab0def == bassign<op::bit_and,  uint8_t>( int64, 3, 0x11));
+static_assert(0x0123456789abddef == bassign<op::bit_or ,  uint8_t>( int64, 3, 0x11));
+static_assert(0x0123456789abddef == bassign<op::bit_xor,  uint8_t>( int64, 3, 0x11));
+static_assert(0xfedcba9876541210 == bassign<op::bit_and,   int8_t>(uint64, 3, 0x11));
+static_assert(0xfedcba9876543210 == bassign<op::bit_or ,   int8_t>(uint64, 3, 0x11));
+static_assert(0xfedcba9876542210 == bassign<op::bit_xor,   int8_t>(uint64, 3, 0x11));
+static_assert(0x0123456789ab0def == bassign<op::bit_and,   int8_t>( int64, 3, 0x11));
+static_assert(0x0123456789abddef == bassign<op::bit_or ,   int8_t>( int64, 3, 0x11));
+static_assert(0x0123456789abddef == bassign<op::bit_xor,   int8_t>( int64, 3, 0x11));
+
+static_assert(0x22002200 == bassign<op::bit_and, uint64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x76763232 == bassign<op::bit_or,  uint64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x54761032 == bassign<op::bit_xor, uint64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x00220022 == bassign<op::bit_and, uint64_t>( int32, 0, 0x2222222222222222));
+static_assert(0xababefef == bassign<op::bit_or,  uint64_t>( int32, 0, 0x2222222222222222));
+static_assert(0xab89efcd == bassign<op::bit_xor, uint64_t>( int32, 0, 0x2222222222222222));
+static_assert(0x22002200 == bassign<op::bit_and,  int64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x76763232 == bassign<op::bit_or,   int64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x54761032 == bassign<op::bit_xor,  int64_t>(uint32, 0, 0x2222222222222222));
+static_assert(0x00220022 == bassign<op::bit_and,  int64_t>( int32, 0, 0x2222222222222222));
+static_assert(0xababefef == bassign<op::bit_or,   int64_t>( int32, 0, 0x2222222222222222));
+static_assert(0xab89efcd == bassign<op::bit_xor,  int64_t>( int32, 0, 0x2222222222222222));
+
+static_assert(0x16543210 == bassign<op::bit_and, uint8_t>(uint32, 7, 0x99));
+static_assert(0xf6543210 == bassign<op::bit_or,  uint8_t>(uint32, 7, 0x99));
+static_assert(0xe6543210 == bassign<op::bit_xor, uint8_t>(uint32, 7, 0x99));
+static_assert(0x89abcd8f == bassign<op::bit_and, uint8_t>( int32, 1, 0x99));
+static_assert(0x89abcdff == bassign<op::bit_or,  uint8_t>( int32, 1, 0x99));
+static_assert(0x89abcd7f == bassign<op::bit_xor, uint8_t>( int32, 1, 0x99));
+static_assert(0x16543210 == bassign<op::bit_and,  int8_t>(uint32, 7, 0x99));
+static_assert(0xf6543210 == bassign<op::bit_or,   int8_t>(uint32, 7, 0x99));
+static_assert(0xe6543210 == bassign<op::bit_xor,  int8_t>(uint32, 7, 0x99));
+static_assert(0x89abcd8f == bassign<op::bit_and,  int8_t>( int32, 1, 0x99));
+static_assert(0x89abcdff == bassign<op::bit_or,   int8_t>( int32, 1, 0x99));
+static_assert(0x89abcd7f == bassign<op::bit_xor,  int8_t>( int32, 1, 0x99));
 
 constexpr std::array<uint64_t, 2> const uint64a{
 	0x7766554433221100, 0xffeeddccbbaa9988
@@ -766,7 +904,7 @@ static_assert(std::array<uint64_t, 2>{0xcffffffffffffff5, 0xffeeddccbbaa9988} ==
 static_assert(std::array<uint64_t, 2>{0xffffffffffffff50, 0xffeeddccbbaa998c} == dassign<uint64_t>(uint64a,    4, 0xcffffffffffffff5));
 static_assert(std::array<uint64_t, 2>{0xf566554433221100, 0xffcfffffffffffff} == dassign<uint64_t>(uint64a,   56, 0xcffffffffffffff5));
 static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffffff5cbbaa9988} == dassign<uint64_t>(uint64a,  100, 0xcffffffffffffff5));
-static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)}
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)}
               == dassign<uint64_t>( int64a, -200, 0xcffffffffffffff5));
 static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)}
               == dassign<uint64_t>( int64a, - 64, 0xcffffffffffffff5));
@@ -959,6 +1097,106 @@ static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221c50), static_c
 static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0xc5665544), static_cast<int32_t>(0xbbaa9988)} == dassign< int8_t>( int32a,   56, 0xc5));
 static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign< int8_t>( int32a,  100, 0xc5));
 
+static_assert(std::array<uint64_t, 2>{0x1166554433221100, 0xff00110011001100}
+              == dassign<op::bit_and, uint64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffffddddbbbb9999}
+              == dassign<op::bit_or,  uint64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array<uint64_t, 2>{0x6666554433221100, 0xffffccddaabb8899}
+              == dassign<op::bit_xor, uint64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x1166554433221100, static_cast<int64_t>(0xff00110011001100)}
+              == dassign<op::bit_and, uint64_t>( int64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffffddddbbbb9999)}
+              == dassign<op::bit_or,  uint64_t>( int64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x6666554433221100, static_cast<int64_t>(0xffffccddaabb8899)}
+              == dassign<op::bit_xor, uint64_t>( int64a, 56, 0x1111111111111111));
+static_assert(std::array<uint64_t, 2>{0x1166554433221100, 0xff00110011001100}
+              == dassign<op::bit_and,  int64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffffddddbbbb9999}
+              == dassign<op::bit_or,   int64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array<uint64_t, 2>{0x6666554433221100, 0xffffccddaabb8899}
+              == dassign<op::bit_xor,  int64_t>(uint64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x1166554433221100, static_cast<int64_t>(0xff00110011001100)}
+              == dassign<op::bit_and,  int64_t>( int64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffffddddbbbb9999)}
+              == dassign<op::bit_or,   int64_t>( int64a, 56, 0x1111111111111111));
+static_assert(std::array< int64_t, 2>{0x6666554433221100, static_cast<int64_t>(0xffffccddaabb8899)}
+              == dassign<op::bit_xor,  int64_t>( int64a, 56, 0x1111111111111111));
+
+static_assert(std::array<uint64_t, 2>{0x1766554433221100, 0xffeeddccbbaa9980}
+              == dassign<op::bit_and, uint8_t>(uint64a, 60, 0x11));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9989}
+              == dassign<op::bit_or,  uint8_t>(uint64a, 60, 0x11));
+static_assert(std::array<uint64_t, 2>{0x6766554433221100, 0xffeeddccbbaa9989}
+              == dassign<op::bit_xor, uint8_t>(uint64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x1766554433221100, static_cast<int64_t>(0xffeeddccbbaa9980)}
+              == dassign<op::bit_and, uint8_t>( int64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9989)}
+              == dassign<op::bit_or,  uint8_t>( int64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x6766554433221100, static_cast<int64_t>(0xffeeddccbbaa9989)}
+              == dassign<op::bit_xor, uint8_t>( int64a, 60, 0x11));
+static_assert(std::array<uint64_t, 2>{0x1766554433221100, 0xffeeddccbbaa9980}
+              == dassign<op::bit_and,  int8_t>(uint64a, 60, 0x11));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9989}
+              == dassign<op::bit_or,   int8_t>(uint64a, 60, 0x11));
+static_assert(std::array<uint64_t, 2>{0x6766554433221100, 0xffeeddccbbaa9989}
+              == dassign<op::bit_xor,  int8_t>(uint64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x1766554433221100, static_cast<int64_t>(0xffeeddccbbaa9980)}
+              == dassign<op::bit_and,  int8_t>( int64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9989)}
+              == dassign<op::bit_or,   int8_t>( int64a, 60, 0x11));
+static_assert(std::array< int64_t, 2>{0x6766554433221100, static_cast<int64_t>(0xffeeddccbbaa9989)}
+              == dassign<op::bit_xor,  int8_t>( int64a, 60, 0x11));
+
+static_assert(std::array<uint32_t, 3>{0x23221100, 0x22220000, 0xb2220000}
+              == dassign<op::bit_and, uint64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77667766, 0xbbaabbaa}
+              == dassign<op::bit_or,  uint64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array<uint32_t, 3>{0x13221100, 0x55447766, 0xb988bbaa}
+              == dassign<op::bit_xor, uint64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x23221100, 0x22220000, static_cast<int32_t>(0xb2220000)}
+              == dassign<op::bit_and, uint64_t>( int32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77667766, static_cast<int32_t>(0xbbaabbaa)}
+              == dassign<op::bit_or,  uint64_t>( int32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x13221100, 0x55447766, static_cast<int32_t>(0xb988bbaa)}
+              == dassign<op::bit_xor, uint64_t>( int32a, 28, 0x2222222222222222));
+static_assert(std::array<uint32_t, 3>{0x23221100, 0x22220000, 0xb2220000}
+              == dassign<op::bit_and,  int64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77667766, 0xbbaabbaa}
+              == dassign<op::bit_or,   int64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array<uint32_t, 3>{0x13221100, 0x55447766, 0xb988bbaa}
+              == dassign<op::bit_xor,  int64_t>(uint32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x23221100, 0x22220000, static_cast<int32_t>(0xb2220000)}
+              == dassign<op::bit_and,  int64_t>( int32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77667766, static_cast<int32_t>(0xbbaabbaa)}
+              == dassign<op::bit_or,   int64_t>( int32a, 28, 0x2222222222222222));
+static_assert(std::array< int32_t, 3>{0x13221100, 0x55447766, static_cast<int32_t>(0xb988bbaa)}
+              == dassign<op::bit_xor,  int64_t>( int32a, 28, 0x2222222222222222));
+
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x17665544, 0xbbaa9988}
+              == dassign<op::bit_and, uint8_t>(uint32a, 60, 0x99));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xf7665544, 0xbbaa9989}
+              == dassign<op::bit_or,  uint8_t>(uint32a, 60, 0x99));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xe7665544, 0xbbaa9981}
+              == dassign<op::bit_xor, uint8_t>(uint32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x17665544), static_cast<int32_t>(0xbbaa9988)}
+              == dassign<op::bit_and, uint8_t>( int32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xf7665544), static_cast<int32_t>(0xbbaa9989)}
+              == dassign<op::bit_or,  uint8_t>( int32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xe7665544), static_cast<int32_t>(0xbbaa9981)}
+              == dassign<op::bit_xor, uint8_t>( int32a, 60, 0x99));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x17665544, 0xbbaa9988}
+              == dassign<op::bit_and,  int8_t>(uint32a, 60, 0x99));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xf7665544, 0xbbaa9989}
+              == dassign<op::bit_or,   int8_t>(uint32a, 60, 0x99));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xe7665544, 0xbbaa9981}
+              == dassign<op::bit_xor,  int8_t>(uint32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x17665544), static_cast<int32_t>(0xbbaa9988)}
+              == dassign<op::bit_and,  int8_t>( int32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xf7665544), static_cast<int32_t>(0xbbaa9989)}
+              == dassign<op::bit_or,   int8_t>( int32a, 60, 0x99));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xe7665544), static_cast<int32_t>(0xbbaa9981)}
+              == dassign<op::bit_xor,  int8_t>( int32a, 60, 0x99));
+
 static_assert(expect<uint64_t>(uint64a, 0x7766554433221100, 0xffeeddccbbaa9988,  0,  0));
 static_assert(expect< int64_t>(uint64a, 0x7766554433221100, 0xffeeddccbbaa9988,  0,  0));
 static_assert(expect<uint64_t>( int64a, 0x7766554433221100, 0xffeeddccbbaa9988, -1, -1));
@@ -1105,5 +1343,57 @@ static_assert(assign< uint8_t>( uint8a, 0xae));
 static_assert(assign< uint8_t>(  int8a, 0xae));
 static_assert(assign<  int8_t>( uint8a, 0xae));
 static_assert(assign<  int8_t>(  int8a, 0xae));
+
+static_assert(std::array<uint64_t, 2>{0x5544554433221100, 0xffeeddccbbaa9988} == bassign<op::bit_and, uint64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array<uint64_t, 2>{0x7777555533221100, 0xffeeddccbbaa9988} == bassign<op::bit_or,  uint64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array<uint64_t, 2>{0x2233001133221100, 0xffeeddccbbaa9988} == bassign<op::bit_xor, uint64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x5544554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_and, uint64_t>( int64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7777555533221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_or,  uint64_t>( int64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x2233001133221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_xor, uint64_t>( int64a, 1, 0x5555555555555555));
+static_assert(std::array<uint64_t, 2>{0x5544554433221100, 0xffeeddccbbaa9988} == bassign<op::bit_and,  int64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array<uint64_t, 2>{0x7777555533221100, 0xffeeddccbbaa9988} == bassign<op::bit_or,   int64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array<uint64_t, 2>{0x2233001133221100, 0xffeeddccbbaa9988} == bassign<op::bit_xor,  int64_t>(uint64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x5544554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_and,  int64_t>( int64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7777555533221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_or,   int64_t>( int64a, 1, 0x5555555555555555));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x2233001133221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == bassign<op::bit_xor,  int64_t>( int64a, 1, 0x5555555555555555));
+
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xff4eddccbbaa9988} == bassign<op::bit_and, uint8_t>(uint64a, 29, 0x55));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xfffeddccbbaa9988} == bassign<op::bit_or,  uint8_t>(uint64a, 29, 0x55));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffbeddccbbaa9988} == bassign<op::bit_xor, uint8_t>(uint64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xff4eddccbbaa9988)} == bassign<op::bit_and, uint8_t>( int64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xfffeddccbbaa9988)} == bassign<op::bit_or,  uint8_t>( int64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffbeddccbbaa9988)} == bassign<op::bit_xor, uint8_t>( int64a, 29, 0x55));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xff4eddccbbaa9988} == bassign<op::bit_and,  int8_t>(uint64a, 29, 0x55));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xfffeddccbbaa9988} == bassign<op::bit_or,   int8_t>(uint64a, 29, 0x55));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffbeddccbbaa9988} == bassign<op::bit_xor,  int8_t>(uint64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xff4eddccbbaa9988)} == bassign<op::bit_and,  int8_t>( int64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xfffeddccbbaa9988)} == bassign<op::bit_or,   int8_t>( int64a, 29, 0x55));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffbeddccbbaa9988)} == bassign<op::bit_xor,  int8_t>( int64a, 29, 0x55));
+
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x11001100, 0xbbaa9988} == bassign<op::bit_and, uint64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xffffdddd, 0xbbaa9988} == bassign<op::bit_or,  uint64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xeeffccdd, 0xbbaa9988} == bassign<op::bit_xor, uint64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x11001100), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_and, uint64_t>( int32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xffffdddd), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_or,  uint64_t>( int32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xeeffccdd), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_xor, uint64_t>( int32a, 1, 0x5555555599999999));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x11001100, 0xbbaa9988} == bassign<op::bit_and,  int64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xffffdddd, 0xbbaa9988} == bassign<op::bit_or,   int64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0xeeffccdd, 0xbbaa9988} == bassign<op::bit_xor,  int64_t>(uint32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x11001100), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_and,  int64_t>( int32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xffffdddd), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_or,   int64_t>( int32a, 1, 0x5555555599999999));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xeeffccdd), static_cast<int32_t>(0xbbaa9988)} == bassign<op::bit_xor,  int64_t>( int32a, 1, 0x5555555599999999));
+
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9980} == bassign<op::bit_and, uint8_t>(uint32a, 16, 0x55));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa998d} == bassign<op::bit_or,  uint8_t>(uint32a, 16, 0x55));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa998d} == bassign<op::bit_xor, uint8_t>(uint32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa9980)} == bassign<op::bit_and, uint8_t>( int32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa998d)} == bassign<op::bit_or,  uint8_t>( int32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa998d)} == bassign<op::bit_xor, uint8_t>( int32a, 16, 0x55));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9980} == bassign<op::bit_and,  int8_t>(uint32a, 16, 0x55));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa998d} == bassign<op::bit_or,   int8_t>(uint32a, 16, 0x55));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa998d} == bassign<op::bit_xor,  int8_t>(uint32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa9980)} == bassign<op::bit_and,  int8_t>( int32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa998d)} == bassign<op::bit_or,   int8_t>( int32a, 16, 0x55));
+static_assert(std::array< int32_t, 3>{0x33221100, 0x77665544, static_cast<int32_t>(0xbbaa998d)} == bassign<op::bit_xor,  int8_t>( int32a, 16, 0x55));
 
 } /* namespace */
