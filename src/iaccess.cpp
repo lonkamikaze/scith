@@ -200,6 +200,25 @@ static_assert(static_cast< int8_t>(0xde) == digits_as< int8_t>( int64)[   4]);
 static_assert(static_cast< int8_t>(0x01) == digits_as< int8_t>( int64)[  56]);
 static_assert(static_cast< int8_t>(0x00) == digits_as< int8_t>( int64)[ 100]);
 
+static_assert(!digits_as<bool>(uint64)[-200]);
+static_assert(!digits_as<bool>(uint64)[- 64]);
+static_assert(!digits_as<bool>(uint64)[- 60]);
+static_assert(!digits_as<bool>(uint64)[- 56]);
+static_assert(!digits_as<bool>(uint64)[-  4]);
+static_assert(!digits_as<bool>(uint64)[   0]);
+static_assert( digits_as<bool>(uint64)[   4]);
+static_assert(!digits_as<bool>(uint64)[  56]);
+static_assert(!digits_as<bool>(uint64)[ 100]);
+static_assert(!digits_as<bool>( int64)[-200]);
+static_assert(!digits_as<bool>( int64)[- 64]);
+static_assert(!digits_as<bool>( int64)[- 60]);
+static_assert(!digits_as<bool>( int64)[- 56]);
+static_assert(!digits_as<bool>( int64)[-  4]);
+static_assert( digits_as<bool>( int64)[   0]);
+static_assert(!digits_as<bool>( int64)[   4]);
+static_assert( digits_as<bool>( int64)[  56]);
+static_assert(!digits_as<bool>( int64)[ 100]);
+
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32)[-200]);
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32)[- 64]);
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32)[- 60]);
@@ -273,6 +292,25 @@ static_assert(static_cast< int8_t>(0xef) == digits_as< int8_t>( int32)[   0]);
 static_assert(static_cast< int8_t>(0xde) == digits_as< int8_t>( int32)[   4]);
 static_assert(static_cast< int8_t>(0xff) == digits_as< int8_t>( int32)[  56]);
 static_assert(static_cast< int8_t>(0xff) == digits_as< int8_t>( int32)[ 100]);
+
+static_assert(!digits_as<bool>(uint32)[-200]);
+static_assert(!digits_as<bool>(uint32)[- 64]);
+static_assert(!digits_as<bool>(uint32)[- 60]);
+static_assert(!digits_as<bool>(uint32)[- 56]);
+static_assert(!digits_as<bool>(uint32)[-  4]);
+static_assert(!digits_as<bool>(uint32)[   0]);
+static_assert( digits_as<bool>(uint32)[   4]);
+static_assert(!digits_as<bool>(uint32)[  56]);
+static_assert(!digits_as<bool>(uint32)[ 100]);
+static_assert(!digits_as<bool>( int32)[-200]);
+static_assert(!digits_as<bool>( int32)[- 64]);
+static_assert(!digits_as<bool>( int32)[- 60]);
+static_assert(!digits_as<bool>( int32)[- 56]);
+static_assert(!digits_as<bool>( int32)[-  4]);
+static_assert( digits_as<bool>( int32)[   0]);
+static_assert(!digits_as<bool>( int32)[   4]);
+static_assert( digits_as<bool>( int32)[  56]);
+static_assert( digits_as<bool>( int32)[ 100]);
 
 template <integral T>
 constexpr auto dassign(auto value, std::ptrdiff_t const i, auto const assign) {
@@ -354,6 +392,31 @@ static_assert(0x0123456789abcc5f == dassign< int8_t>( int64,    4, 0xc5));
 static_assert(0xc523456789abcdef == dassign< int8_t>( int64,   56, 0xc5));
 static_assert(0x0123456789abcdef == dassign< int8_t>( int64,  100, 0xc5));
 
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64, -200, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64, - 64, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64, - 60, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64, - 56, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64, -  4, 1));
+static_assert(0xfedcba9876543211 == dassign<bool>(uint64,    0, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64,    4, 1));
+static_assert(0xffdcba9876543210 == dassign<bool>(uint64,   56, 1));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64,    0, 0));
+static_assert(0xfedcba9876543200 == dassign<bool>(uint64,    4, 0));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64,   56, 0));
+static_assert(0xfedcba9876543210 == dassign<bool>(uint64,  100, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64, -200, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64, - 64, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64, - 60, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64, - 56, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64, -  4, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64,    0, 1));
+static_assert(0x0123456789abcdff == dassign<bool>( int64,    4, 1));
+static_assert(0x0123456789abcdef == dassign<bool>( int64,   56, 1));
+static_assert(0x0123456789abcdee == dassign<bool>( int64,    0, 0));
+static_assert(0x0123456789abcdef == dassign<bool>( int64,    4, 0));
+static_assert(0x0023456789abcdef == dassign<bool>( int64,   56, 0));
+static_assert(0x0123456789abcdef == dassign<bool>( int64,  100, 1));
+
 static_assert(0x76543210 == dassign<uint64_t>(uint32, -200, 0xcffffffd6ffffff5));
 static_assert(0x76543210 == dassign<uint64_t>(uint32, - 64, 0xcffffffd6ffffff5));
 static_assert(0x7654321c == dassign<uint64_t>(uint32, - 60, 0xcffffffd6ffffff5));
@@ -428,6 +491,28 @@ static_assert(0x89abcc5f == dassign< int8_t>( int32,    4, 0xc5));
 static_assert(0x89abcdef == dassign< int8_t>( int32,   56, 0xc5));
 static_assert(0x89abcdef == dassign< int8_t>( int32,  100, 0xc5));
 
+static_assert(0x76543210 == dassign<bool>(uint32, - 64, 1));
+static_assert(0x76543210 == dassign<bool>(uint32, - 60, 1));
+static_assert(0x76543210 == dassign<bool>(uint32, - 56, 1));
+static_assert(0x76543210 == dassign<bool>(uint32, -  4, 1));
+static_assert(0x76543211 == dassign<bool>(uint32,    0, 1));
+static_assert(0x76543210 == dassign<bool>(uint32,    4, 1));
+static_assert(0x76543210 == dassign<bool>(uint32,    0, 0));
+static_assert(0x76543200 == dassign<bool>(uint32,    4, 0));
+static_assert(0x76543210 == dassign<bool>(uint32,   56, 1));
+static_assert(0x76543210 == dassign<bool>(uint32,  100, 1));
+static_assert(0x89abcdef == dassign<bool>( int32, -200, 1));
+static_assert(0x89abcdef == dassign<bool>( int32, - 64, 1));
+static_assert(0x89abcdef == dassign<bool>( int32, - 60, 1));
+static_assert(0x89abcdef == dassign<bool>( int32, - 56, 1));
+static_assert(0x89abcdef == dassign<bool>( int32, -  4, 1));
+static_assert(0x89abcdef == dassign<bool>( int32,    0, 1));
+static_assert(0x89abcdff == dassign<bool>( int32,    4, 1));
+static_assert(0x89abcdee == dassign<bool>( int32,    0, 0));
+static_assert(0x89abcdef == dassign<bool>( int32,    4, 0));
+static_assert(0x89abcdef == dassign<bool>( int32,   56, 1));
+static_assert(0x89abcdef == dassign<bool>( int32,  100, 1));
+
 enum class op { bit_and, bit_or, bit_xor, };
 
 template <op OpV, integral T>
@@ -472,6 +557,19 @@ static_assert(0x0123456789a10def == dassign<op::bit_and,   int8_t>( int64, 12, 0
 static_assert(0x0123456789abddef == dassign<op::bit_or ,   int8_t>( int64, 12, 0x11));
 static_assert(0x0123456789aaddef == dassign<op::bit_xor,   int8_t>( int64, 12, 0x11));
 
+static_assert(0xfedcba9876542210 == dassign<op::bit_and, bool>(uint64, 12, 0));
+static_assert(0xfedcba9876543210 == dassign<op::bit_or , bool>(uint64, 12, 0));
+static_assert(0xfedcba9876543210 == dassign<op::bit_xor, bool>(uint64, 12, 0));
+static_assert(0x0123456789abcdef == dassign<op::bit_and, bool>( int64, 12, 0));
+static_assert(0x0123456789abcdef == dassign<op::bit_or , bool>( int64, 12, 0));
+static_assert(0x0123456789abcdef == dassign<op::bit_xor, bool>( int64, 12, 0));
+static_assert(0xfedcba9876543210 == dassign<op::bit_and, bool>(uint64, 12, 1));
+static_assert(0xfedcba9876543210 == dassign<op::bit_or , bool>(uint64, 12, 1));
+static_assert(0xfedcba9876542210 == dassign<op::bit_xor, bool>(uint64, 12, 1));
+static_assert(0x0123456789abcdef == dassign<op::bit_and, bool>( int64, 12, 1));
+static_assert(0x0123456789abddef == dassign<op::bit_or , bool>( int64, 12, 1));
+static_assert(0x0123456789abddef == dassign<op::bit_xor, bool>( int64, 12, 1));
+
 static_assert(0x76542200 == dassign<op::bit_and, uint64_t>(uint32, -48, 0x2222222222222222));
 static_assert(0x76543232 == dassign<op::bit_or,  uint64_t>(uint32, -48, 0x2222222222222222));
 static_assert(0x76541032 == dassign<op::bit_xor, uint64_t>(uint32, -48, 0x2222222222222222));
@@ -497,6 +595,19 @@ static_assert(0xe6543210 == dassign<op::bit_xor,  int8_t>(uint32, 28, 0x99));
 static_assert(0x89abc98f == dassign<op::bit_and,  int8_t>( int32,  4, 0x99));
 static_assert(0x89abcdff == dassign<op::bit_or,   int8_t>( int32,  4, 0x99));
 static_assert(0x89abc47f == dassign<op::bit_xor,  int8_t>( int32,  4, 0x99));
+
+static_assert(0x66543210 == dassign<op::bit_and, bool>(uint32, 28, 0));
+static_assert(0x76543210 == dassign<op::bit_or,  bool>(uint32, 28, 0));
+static_assert(0x76543210 == dassign<op::bit_xor, bool>(uint32, 28, 0));
+static_assert(0x89abcdef == dassign<op::bit_and, bool>( int32,  4, 0));
+static_assert(0x89abcdef == dassign<op::bit_or,  bool>( int32,  4, 0));
+static_assert(0x89abcdef == dassign<op::bit_xor, bool>( int32,  4, 0));
+static_assert(0x76543210 == dassign<op::bit_and, bool>(uint32, 28, 1));
+static_assert(0x76543210 == dassign<op::bit_or,  bool>(uint32, 28, 1));
+static_assert(0x66543210 == dassign<op::bit_xor, bool>(uint32, 28, 1));
+static_assert(0x89abcdef == dassign<op::bit_and, bool>( int32,  4, 1));
+static_assert(0x89abcdff == dassign<op::bit_or,  bool>( int32,  4, 1));
+static_assert(0x89abcdff == dassign<op::bit_xor, bool>( int32,  4, 1));
 
 static_assert(expect<uint64_t>(uint64, 0xfedcba9876543210,  0,  0));
 static_assert(expect< int64_t>(uint64, 0xfedcba9876543210,  0,  0));
@@ -821,6 +932,25 @@ static_assert(static_cast< int8_t>(0x10) == digits_as< int8_t>( int64a)[   4]);
 static_assert(static_cast< int8_t>(0x77) == digits_as< int8_t>( int64a)[  56]);
 static_assert(static_cast< int8_t>(0xdc) == digits_as< int8_t>( int64a)[ 100]);
 
+static_assert(!digits_as<bool>(uint64a)[-200]);
+static_assert(!digits_as<bool>(uint64a)[- 64]);
+static_assert(!digits_as<bool>(uint64a)[- 60]);
+static_assert(!digits_as<bool>(uint64a)[- 56]);
+static_assert(!digits_as<bool>(uint64a)[-  4]);
+static_assert(!digits_as<bool>(uint64a)[   0]);
+static_assert(!digits_as<bool>(uint64a)[   4]);
+static_assert( digits_as<bool>(uint64a)[  56]);
+static_assert(!digits_as<bool>(uint64a)[ 100]);
+static_assert(!digits_as<bool>( int64a)[-200]);
+static_assert(!digits_as<bool>( int64a)[- 64]);
+static_assert(!digits_as<bool>( int64a)[- 60]);
+static_assert(!digits_as<bool>( int64a)[- 56]);
+static_assert(!digits_as<bool>( int64a)[-  4]);
+static_assert(!digits_as<bool>( int64a)[   0]);
+static_assert(!digits_as<bool>( int64a)[   4]);
+static_assert( digits_as<bool>( int64a)[  56]);
+static_assert(!digits_as<bool>( int64a)[ 100]);
+
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32a)[-200]);
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32a)[- 64]);
 static_assert(0x0000000000000000 == digits_as<uint64_t>(uint32a)[- 60]);
@@ -894,6 +1024,25 @@ static_assert(static_cast< int8_t>(0x00) == digits_as< int8_t>( int32a)[   0]);
 static_assert(static_cast< int8_t>(0x10) == digits_as< int8_t>( int32a)[   4]);
 static_assert(static_cast< int8_t>(0x77) == digits_as< int8_t>( int32a)[  56]);
 static_assert(static_cast< int8_t>(0xff) == digits_as< int8_t>( int32a)[ 100]);
+
+static_assert(!digits_as<bool>(uint32a)[-200]);
+static_assert(!digits_as<bool>(uint32a)[- 64]);
+static_assert(!digits_as<bool>(uint32a)[- 60]);
+static_assert(!digits_as<bool>(uint32a)[- 56]);
+static_assert(!digits_as<bool>(uint32a)[-  4]);
+static_assert(!digits_as<bool>(uint32a)[   0]);
+static_assert(!digits_as<bool>(uint32a)[   4]);
+static_assert( digits_as<bool>(uint32a)[  56]);
+static_assert(!digits_as<bool>(uint32a)[ 100]);
+static_assert(!digits_as<bool>( int32a)[-200]);
+static_assert(!digits_as<bool>( int32a)[- 64]);
+static_assert(!digits_as<bool>( int32a)[- 60]);
+static_assert(!digits_as<bool>( int32a)[- 56]);
+static_assert(!digits_as<bool>( int32a)[-  4]);
+static_assert(!digits_as<bool>( int32a)[   0]);
+static_assert(!digits_as<bool>( int32a)[   4]);
+static_assert( digits_as<bool>( int32a)[  56]);
+static_assert( digits_as<bool>( int32a)[ 100]);
 
 static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<uint64_t>(uint64a, -200, 0xcffffffffffffff5));
 static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<uint64_t>(uint64a, - 64, 0xcffffffffffffff5));
@@ -1005,6 +1154,33 @@ static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0xc566554433221100), 
 static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeedc5cbbaa9988)}
               == dassign< int8_t>( int64a,  100, 0xc5));
 
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a, -200, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a, - 64, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a, - 60, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a, - 56, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a, -  4, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,    0, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,    4, 0));
+static_assert(std::array<uint64_t, 2>{0x7666554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,   56, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,  100, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221101, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,    0, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221110, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,    4, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<bool>(uint64a,   56, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeedddcbbaa9988} == dassign<bool>(uint64a,  100, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a, -200, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a, - 64, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a, - 60, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a, - 56, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a, -  4, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,    0, 0));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,    4, 0));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7666554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,   56, 0));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,  100, 0));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221101), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,    0, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221110), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,    4, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<bool>( int64a,   56, 1));
+static_assert(std::array< int64_t, 2>{static_cast<int64_t>(0x7766554433221100), static_cast<int64_t>(0xffeedddcbbaa9988)} == dassign<bool>( int64a,  100, 1));
+
 static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<uint64_t>(uint32a, -200, 0xcffffffd6ffffff5));
 static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<uint64_t>(uint32a, - 64, 0xcffffffd6ffffff5));
 static_assert(std::array<uint32_t, 3>{0x3322110c, 0x77665544, 0xbbaa9988} == dassign<uint64_t>(uint32a, - 60, 0xcffffffd6ffffff5));
@@ -1097,6 +1273,31 @@ static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221c50), static_c
 static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0xc5665544), static_cast<int32_t>(0xbbaa9988)} == dassign< int8_t>( int32a,   56, 0xc5));
 static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign< int8_t>( int32a,  100, 0xc5));
 
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a, -200, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a, - 64, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a, - 60, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a, - 56, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a, -  4, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,    0, 0));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,    4, 0));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x76665544, 0xbbaa9988} == dassign<bool>(uint32a,   56, 0));
+static_assert(std::array<uint32_t, 3>{0x33221101, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,    0, 1));
+static_assert(std::array<uint32_t, 3>{0x33221110, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,    4, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,   56, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<bool>(uint32a,  100, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a, -200, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a, - 64, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a, - 60, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a, - 56, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a, -  4, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,    0, 0));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,    4, 0));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x76665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,   56, 0));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221101), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,    0, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221110), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,    4, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,   56, 1));
+static_assert(std::array< int32_t, 3>{static_cast<int32_t>(0x33221100), static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<bool>( int32a,  100, 1));
+
 static_assert(std::array<uint64_t, 2>{0x1166554433221100, 0xff00110011001100}
               == dassign<op::bit_and, uint64_t>(uint64a, 56, 0x1111111111111111));
 static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffffddddbbbb9999}
@@ -1147,6 +1348,19 @@ static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0
 static_assert(std::array< int64_t, 2>{0x6766554433221100, static_cast<int64_t>(0xffeeddccbbaa9989)}
               == dassign<op::bit_xor,  int8_t>( int64a, 60, 0x11));
 
+static_assert(std::array<uint64_t, 2>{0x6766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_and, bool>(uint64a, 60, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_or,  bool>(uint64a, 60, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_xor, bool>(uint64a, 60, 0));
+static_assert(std::array< int64_t, 2>{0x6766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_and, bool>( int64a, 60, 0));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_or,  bool>( int64a, 60, 0));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_xor, bool>( int64a, 60, 0));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_and, bool>(uint64a, 60, 1));
+static_assert(std::array<uint64_t, 2>{0x7766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_or,  bool>(uint64a, 60, 1));
+static_assert(std::array<uint64_t, 2>{0x6766554433221100, 0xffeeddccbbaa9988} == dassign<op::bit_xor, bool>(uint64a, 60, 1));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_and, bool>( int64a, 60, 1));
+static_assert(std::array< int64_t, 2>{0x7766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_or,  bool>( int64a, 60, 1));
+static_assert(std::array< int64_t, 2>{0x6766554433221100, static_cast<int64_t>(0xffeeddccbbaa9988)} == dassign<op::bit_xor, bool>( int64a, 60, 1));
+
 static_assert(std::array<uint32_t, 3>{0x23221100, 0x22220000, 0xb2220000}
               == dassign<op::bit_and, uint64_t>(uint32a, 28, 0x2222222222222222));
 static_assert(std::array<uint32_t, 3>{0x33221100, 0x77667766, 0xbbaabbaa}
@@ -1196,6 +1410,19 @@ static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xf766554
               == dassign<op::bit_or,   int8_t>( int32a, 60, 0x99));
 static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0xe7665544), static_cast<int32_t>(0xbbaa9981)}
               == dassign<op::bit_xor,  int8_t>( int32a, 60, 0x99));
+
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x67665544, 0xbbaa9988} == dassign<op::bit_and, bool>(uint32a, 60, 0));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<op::bit_or,  bool>(uint32a, 60, 0));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<op::bit_xor, bool>(uint32a, 60, 0));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x67665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_and, bool>( int32a, 60, 0));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_or,  bool>( int32a, 60, 0));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_xor, bool>( int32a, 60, 0));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<op::bit_and, bool>(uint32a, 60, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x77665544, 0xbbaa9988} == dassign<op::bit_or,  bool>(uint32a, 60, 1));
+static_assert(std::array<uint32_t, 3>{0x33221100, 0x67665544, 0xbbaa9988} == dassign<op::bit_xor, bool>(uint32a, 60, 1));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_and, bool>( int32a, 60, 1));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x77665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_or,  bool>( int32a, 60, 1));
+static_assert(std::array< int32_t, 3>{0x33221100, static_cast<int32_t>(0x67665544), static_cast<int32_t>(0xbbaa9988)} == dassign<op::bit_xor, bool>( int32a, 60, 1));
 
 static_assert(expect<uint64_t>(uint64a, 0x7766554433221100, 0xffeeddccbbaa9988,  0,  0));
 static_assert(expect< int64_t>(uint64a, 0x7766554433221100, 0xffeeddccbbaa9988,  0,  0));

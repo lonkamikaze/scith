@@ -174,6 +174,60 @@ class ints_digits_reference {
 	}
 };
 
+template <integrals IntsT>
+class ints_digits_reference<bool, IntsT> {
+	private:
+	using DataT = base_t<IntsT>;
+	using UDataT = std::make_unsigned_t<DataT>;
+
+	static constexpr std::ptrdiff_t const value_digits{udigits_v<DataT>};
+	static constexpr std::ptrdiff_t const values_size{size_v<IntsT>};
+	static constexpr std::ptrdiff_t const values_digits{values_size * value_digits};
+
+	DataT * values;
+	std::ptrdiff_t i;
+
+	template <UDataT(* FuncV)(UDataT, UDataT) noexcept>
+	constexpr auto& assign(bool const op) noexcept {
+		if(i >= 0 && i < values_digits) {
+			auto const index {i / value_digits};
+			auto const offset{i % value_digits};
+			auto & value{values[index]};
+			value = FuncV(value, UDataT{op} << offset);
+		}
+		return *this;
+	}
+
+	public:
+	constexpr ints_digits_reference(DataT * const values, std::ptrdiff_t const i) noexcept :
+	    values{values}, i{i} {}
+
+	constexpr operator bool() const noexcept {
+		return i < 0 ? 0
+		       : i >= values_digits ? values[values_size - 1] < 0
+		         : (values[i / value_digits] >> (i % value_digits)) & 1;
+	}
+
+	constexpr auto & operator =(bool const value) noexcept {
+		return value ? *this |= 1 : *this &= 0;
+	}
+
+	constexpr auto & operator &=(bool const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l & ~r;}};
+		return assign<op>(!value);
+	}
+
+	constexpr auto & operator |=(bool const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l | r;}};
+		return assign<op>(value);
+	}
+
+	constexpr auto & operator ^=(bool const value) noexcept {
+		constexpr auto const op{[](UDataT l, UDataT r) noexcept -> UDataT {return l ^ r;}};
+		return assign<op>(value);
+	}
+};
+
 template <integral T, integrals IntsT>
 class ints_digits {
 	private:
@@ -194,6 +248,33 @@ class ints_digits {
 	    values{data_p(values)} {}
 
 	constexpr T operator [](std::ptrdiff_t const i) const noexcept {
+		return reference{this->values, i};
+	}
+
+	constexpr auto operator [](std::ptrdiff_t const i) noexcept {
+		return reference{this->values, i};
+	}
+};
+
+template <integrals IntsT>
+class ints_digits<bool, IntsT> {
+	private:
+	using DataT = base_t<IntsT>;
+	using reference = ints_digits_reference<bool, IntsT>;
+
+	DataT * values;
+
+	public:
+	static constexpr auto const digits{udigits_v<DataT> * size_v<IntsT>};
+
+	static constexpr auto size() noexcept {
+		return digits;
+	}
+
+	constexpr ints_digits(IntsT & values) noexcept :
+	    values{data_p(values)} {}
+
+	constexpr bool operator [](std::ptrdiff_t const i) const noexcept {
 		return reference{this->values, i};
 	}
 
