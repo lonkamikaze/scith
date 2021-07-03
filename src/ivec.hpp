@@ -724,16 +724,6 @@ struct numeric_limits<T> : numeric_limits<scith::traits::value_t<T>> {
 	static constexpr auto const max_digits10{scith::ivec::cdiv(digits * 1000, 3321)};
 };
 
-template <scith::ivec::integer_variant T>
-struct make_unsigned<T> {
-	using type = scith::ivec::integer<std::make_unsigned_t<scith::traits::value_t<T>>, scith::itraits::digits_v<T>>;
-};
-
-template <scith::ivec::integer_variant T>
-struct make_signed<T> {
-	using type = scith::ivec::integer<std::make_signed_t<scith::traits::value_t<T>>, scith::itraits::digits_v<T>>;
-};
-
 } /* namespace std */
 
 #endif /* _SCITH_IVEC_HPP_ */
