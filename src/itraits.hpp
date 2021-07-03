@@ -125,6 +125,18 @@ constexpr auto cdiv(integral auto const num,
 	       (abs(num) + abs(denom) - 1) / abs(denom);
 }
 
+template <integral T>
+constexpr std::ptrdiff_t log2(T const value) noexcept {
+	auto uvalue{unsigned_cast(value)};
+	std::ptrdiff_t i{0};
+	for (auto bisect{udigits_v<T> / 2}; bisect > 0; bisect /= 2) {
+		auto const shift{((uvalue >> bisect) > 0) * bisect};
+		uvalue >>= shift;
+		i += shift;
+	}
+	return i - !uvalue;
+}
+
 } /* namespace scith::itraits */
 
 #endif /* _SCITH_ITRAITS_HPP_ */

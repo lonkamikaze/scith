@@ -83,6 +83,8 @@ static_assert(std::is_same_v<int32_t, select_common_t< int16_t, uint32_t,  int32
 static_assert(std::is_same_v<int32_t, select_common_t<uint16_t,  int16_t, uint32_t,  int32_t>>);
 static_assert(std::is_same_v<int32_t, select_common_t<uint32_t, uint16_t,  int16_t, uint32_t>>);
 
+using scith::traits::values_t;
+
 static_assert(std::is_same_v<std::array< int32_t, 1>, values_t<integer<int32_t,    1>>>);
 static_assert(std::is_same_v<std::array< int32_t, 1>, values_t<integer<int32_t,   31>>>);
 static_assert(std::is_same_v<std::array< int32_t, 2>, values_t<integer<int32_t,   32>>>);
@@ -751,5 +753,104 @@ static_assert(- 100_ivec == min(-3, -2, -1, 0, 1, -100_ivec8));
 static_assert(    0_ivec == min(3, 2_ivec8, 1, 0, 1, 100));
 static_assert(   55_ivec == min(120_ivec8, 89, 500, 55, 1000));
 static_assert(-1000_ivec == min(-120_ivec8, 89, -1000, 500, 55, 1000));
+
+/* log2() */
+
+static_assert(-  1 == log2(0x00000000_ivec8));
+static_assert(-  1 == log2(0x00000000_ivec64));
+static_assert(   0 == log2(0x00000001_ivec8));
+static_assert(  12 == log2(0x00001001_ivec8));
+static_assert(   2 == log2(-0b1_ivec8));
+static_assert( 121 == log2(-0x000000000001000000203124132467_ivec));
+static_assert(  72 == log2(0x000000000001000000203124132467_ivec));
+static_assert(  71 == log2(0x000000000000f00000203124132467_ivec));
+static_assert(  69 == log2(0x000000000000200000203124132467_ivec));
+
+/* operator /, operator % */
+
+static_assert( 0_ivec ==   0_ivec / 3_ivec);
+static_assert( 0_ivec ==   0_ivec % 3_ivec);
+static_assert( 0_ivec ==   1_ivec / 3_ivec);
+static_assert( 1_ivec ==   1_ivec % 3_ivec);
+static_assert( 0_ivec ==   2_ivec / 3_ivec);
+static_assert( 2_ivec ==   2_ivec % 3_ivec);
+static_assert( 1_ivec ==   3_ivec / 3_ivec);
+static_assert( 0_ivec ==   3_ivec % 3_ivec);
+static_assert(42_ivec == 127_ivec / 3_ivec);
+static_assert( 1_ivec == 127_ivec % 3_ivec);
+static_assert( 0_ivec ==   0      / 3_ivec);
+static_assert( 0_ivec ==   0      % 3_ivec);
+static_assert( 0_ivec ==   0_ivec / 3);
+static_assert( 0_ivec ==   0_ivec % 3);
+
+static_assert(  0_ivec ==   0_ivec / (-3_ivec));
+static_assert(  0_ivec ==   0_ivec % (-3_ivec));
+static_assert(  0_ivec ==   1_ivec / (-3_ivec));
+static_assert(  1_ivec ==   1_ivec % (-3_ivec));
+static_assert(  0_ivec ==   2_ivec / (-3_ivec));
+static_assert(  2_ivec ==   2_ivec % (-3_ivec));
+static_assert(- 1_ivec ==   3_ivec / (-3_ivec));
+static_assert(  0_ivec ==   3_ivec % (-3_ivec));
+static_assert(-42_ivec == 127_ivec / (-3_ivec));
+static_assert(  1_ivec == 127_ivec % (-3_ivec));
+static_assert(  0_ivec ==   0      / (-3_ivec));
+static_assert(  0_ivec ==   0      % (-3_ivec));
+static_assert(  0_ivec ==   0_ivec / (-3));
+static_assert(  0_ivec ==   0_ivec % (-3));
+
+static_assert(  0_ivec == (-  0_ivec) / 3_ivec);
+static_assert(  0_ivec == (-  0_ivec) % 3_ivec);
+static_assert(  0_ivec == (-  1_ivec) / 3_ivec);
+static_assert(- 1_ivec == (-  1_ivec) % 3_ivec);
+static_assert(  0_ivec == (-  2_ivec) / 3_ivec);
+static_assert(- 2_ivec == (-  2_ivec) % 3_ivec);
+static_assert(- 1_ivec == (-  3_ivec) / 3_ivec);
+static_assert(  0_ivec == (-  3_ivec) % 3_ivec);
+static_assert(-42_ivec == (-127_ivec) / 3_ivec);
+static_assert(- 1_ivec == (-127_ivec) % 3_ivec);
+static_assert(  0_ivec == (-  0     ) / 3_ivec);
+static_assert(  0_ivec == (-  0     ) % 3_ivec);
+static_assert(  0_ivec == (-  0_ivec) / 3);
+static_assert(  0_ivec == (-  0_ivec) % 3);
+
+static_assert(  0_ivec == (-  0_ivec) / (-3_ivec));
+static_assert(  0_ivec == (-  0_ivec) % (-3_ivec));
+static_assert(  0_ivec == (-  1_ivec) / (-3_ivec));
+static_assert(- 1_ivec == (-  1_ivec) % (-3_ivec));
+static_assert(  0_ivec == (-  2_ivec) / (-3_ivec));
+static_assert(- 2_ivec == (-  2_ivec) % (-3_ivec));
+static_assert(  1_ivec == (-  3_ivec) / (-3_ivec));
+static_assert(  0_ivec == (-  3_ivec) % (-3_ivec));
+static_assert( 42_ivec == (-127_ivec) / (-3_ivec));
+static_assert(- 1_ivec == (-127_ivec) % (-3_ivec));
+static_assert(  0_ivec == (-  0     ) / (-3_ivec));
+static_assert(  0_ivec == (-  0     ) % (-3_ivec));
+static_assert(  0_ivec == (-  0_ivec) / (-3));
+static_assert(  0_ivec == (-  0_ivec) % (-3));
+
+constexpr bool checkdiv(auto const num, auto const denom) noexcept {
+	auto const [quot, rem]{div(num, denom)};
+	return num == (quot * denom) + rem;
+}
+
+static_assert(0xfffffffffffffffffffffffff_ivec == 0xffffffffffffffffffffffffffffffffffffff_ivec / 0x10000000000000);
+static_assert(            0xfffffffffffff      == 0xffffffffffffffffffffffffffffffffffffff_ivec % 0x10000000000000);
+static_assert(checkdiv(0xffffffffffffffffffffffffffffffffffffff_ivec, 0x10000000000000));
+static_assert(checkdiv(0xffffffffffffffffffffffffffffffffffffff_ivec, 0xfffffffffffff));
+
+static_assert(-0xfffffffffffffffffffffffff_ivec == 0xffffffffffffffffffffffffffffffffffffff_ivec / (-0x10000000000000));
+static_assert(             0xfffffffffffff      == 0xffffffffffffffffffffffffffffffffffffff_ivec % (-0x10000000000000));
+static_assert(checkdiv(0xffffffffffffffffffffffffffffffffffffff_ivec, -0x10000000000000));
+static_assert(checkdiv(0xffffffffffffffffffffffffffffffffffffff_ivec, -0xfffffffffffff));
+
+static_assert(-0xfffffffffffffffffffffffff_ivec == (-0xffffffffffffffffffffffffffffffffffffff_ivec) / 0x10000000000000);
+static_assert(-            0xfffffffffffff      == (-0xffffffffffffffffffffffffffffffffffffff_ivec) % 0x10000000000000);
+static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, 0x10000000000000));
+static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, 0xfffffffffffff));
+
+static_assert( 0xfffffffffffffffffffffffff_ivec == (-0xffffffffffffffffffffffffffffffffffffff_ivec) / (-0x10000000000000));
+static_assert(-            0xfffffffffffff      == (-0xffffffffffffffffffffffffffffffffffffff_ivec) % (-0x10000000000000));
+static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, -0x10000000000000));
+static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, -0xfffffffffffff));
 
 } /* namespace */

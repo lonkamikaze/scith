@@ -287,4 +287,25 @@ static_assert( 2 == cdiv( -5, -3));
 static_assert( 2 == cdiv( -6, -3));
 static_assert( 3 == cdiv( -7, -3));
 
+static_assert(- 1 == log2(0));
+static_assert(  0 == log2(1));
+static_assert(  1 == log2(2));
+static_assert(  1 == log2(3));
+static_assert(  2 == log2(4));
+static_assert(  2 == log2(5));
+static_assert(  2 == log2(6));
+static_assert(  2 == log2(7));
+static_assert(  3 == log2(8));
+static_assert( 63 == log2<int64_t>(-1));
+static_assert( 19 == log2(0x080850));
+static_assert( 19 == log2(0x0fffff));
+static_assert( 20 == log2(0x100000));
+static_assert( 20 == log2(0x1fffff));
+static_assert(  7 == log2<int8_t>(-128));
+static_assert(  7 == log2<int8_t>(-64));
+static_assert(  7 == log2<int8_t>(-1));
+static_assert(  7 == log2<uint8_t>(128));
+static_assert(  6 == log2<uint8_t>(64));
+static_assert(  0 == log2<uint8_t>(1));
+
 } /* namespace */

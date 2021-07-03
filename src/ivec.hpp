@@ -13,15 +13,42 @@
 
 namespace scith::ivec {
 
-using namespace scith::itraits;
-using namespace scith::traits;
+using itraits::integral;
+using itraits::signed_integral;
+using itraits::unsigned_integral;
+using itraits::digits_v;
+using itraits::udigits_v;
+using itraits::min;
+using itraits::max;
+using itraits::log2;
+using itraits::cdiv;
+using itraits::make_signed_if;
+using itraits::make_signed_if_t;
+using itraits::make_unsigned_if;
+using itraits::make_unsigned_if_t;
+using itraits::min_digits_v;
+using itraits::max_digits_v;
+using itraits::sum_digits_v;
+using itraits::has_signed_v;
+using itraits::has_unsigned_v;
+using itraits::unsigned_cast;
+
+using traits::value_t;
+using traits::svalue_t;
+using traits::uvalue_t;
+
 using iaccess::integrals;
 using iaccess::digits_as;
 using iaccess::access_as;
 using iaccess::bisect_as;
 
+/* declarations, this is what would be exported by a module */
+
 template <integral BaseT, std::size_t DigitsV>
 struct integer;
+
+template<integral T>
+integer(T const) -> integer<T, digits_v<T>>;
 
 template <typename T>
 struct is_integer_variant : std::false_type {};
@@ -40,6 +67,31 @@ concept integer_variant = is_integer_variant_v<T>;
 
 template <typename T>
 concept integer_compatible = integer_variant<T> || integral<T>;
+
+template <integer_compatible T> constexpr bool isnan(T const & value);
+
+template <integral T> constexpr auto abs(T const value) noexcept;
+
+template <integer_variant T> requires signed_integral<value_t<T>>
+constexpr auto abs(T const & value) noexcept;
+
+template <integer_variant T> requires unsigned_integral<value_t<T>>
+constexpr auto abs(T value) noexcept;
+
+template <integer_compatible ... Ts>
+constexpr auto max(Ts const & ... values) noexcept;
+
+template <integer_compatible ... Ts>
+constexpr auto min(Ts const & ... values) noexcept;
+
+template <integer_variant T>
+constexpr std::ptrdiff_t log2(T const & value) noexcept;
+
+template <integer_compatible NumT, integer_compatible DenomT>
+struct div_t;
+
+template <integer_compatible NumT, integer_compatible DenomT>
+constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexcept;
 
 namespace ctag {
 	static constexpr struct raw_type {} const raw{};
@@ -211,17 +263,12 @@ constexpr bool is_power_of_two_v<1>{1};
 template <>
 constexpr bool is_power_of_two_v<0>{0};
 
-template <unsigned_integral T>
-constexpr unsigned bits(T const value) noexcept {
-	return (value > 0) ? 1 + bits(value / 2) : 0;
-}
-
 template <radix RadixV>
 struct integer_base;
 
 template <radix RadixV> requires is_power_of_two_v<to_value(RadixV)>
 struct integer_base<RadixV> {
-	static constexpr auto const lshift{bits(to_value(RadixV) - 1)};
+	static constexpr auto const lshift{log2(to_value(RadixV))};
 
 	template <integer_variant ResultT>
 	static constexpr auto parse(std::string_view const str) noexcept {
@@ -513,14 +560,50 @@ constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
 	return result;
 }
 
+template <integer_compatible NumT, integer_compatible DenomT>
+struct div_t {
+	using value_type = select_common_value_t<NumT, DenomT>;
+	integer<value_type, digits_v<NumT>>             quot;
+	integer<value_type, min_digits_v<NumT, DenomT>> rem;
+};
+
+template <integer_compatible NumT, integer_compatible DenomT>
+constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexcept {
+	using divisor_type = decltype(max(abs(num), abs(denom)));
+	using quot_type = decltype(abs(num));
+	divisor_type const divisor{abs(denom)};
+	quot_type quotient;
+	auto quot{digits_as<uint8_t>(quotient)};
+	auto rem{abs(integer{num})};
+	auto const l2div{log2(divisor)};
+	for (auto pow{log2(rem) - l2div}; pow >= 0;
+	     pow = min(log2(rem) - l2div, pow - 1)) {
+		auto const divpow{divisor << pow};
+		if (rem >= divpow) {
+			quot[pow] |= 1;
+			rem = {ctag::narrowing, (rem - divpow)};
+		}
+	}
+	return {
+		{ctag::narrowing, (num < 0) != (denom < 0) ? -quotient : quotient},
+		{ctag::narrowing, num < 0 ? -rem : rem}
+	};
+}
+
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator /(LT const & num, RT const & denom) noexcept {
-	return integer<select_common_value_t<LT, RT>, digits_v<LT>>{};
+	return div(num, denom).quot;
 }
 
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator %(LT const & num, RT const & denom) noexcept {
-	return integer<select_common_value_t<LT, RT>, min_digits_v<LT, RT>>{};
+	return div(num, denom).rem;
+}
+
+template <integral T>
+constexpr auto abs(T const value) noexcept {
+	using UT = std::make_unsigned_t<T>;
+	return integer<UT, udigits_v<T>>{static_cast<UT>(value < 0 ? -value : value)};
 }
 
 template <integer_variant T>
@@ -616,6 +699,18 @@ constexpr auto min(Ts const & ... values) noexcept {
 	using value = select_common_value_t<Ts ...>;
 	constexpr auto const digits{max_digits_v<Ts ...>};
 	return select<integer<value, digits>>(index_of_min(values ...), values ...);
+}
+
+template <integer_variant T>
+constexpr std::ptrdiff_t log2(T const & value) noexcept {
+	if (value < 0) {
+		return digits_v<T> + 1;
+	}
+	using itraits::log2;
+	auto i{value.size() - 1};
+	value_t<T> subv{0};
+	for (; (subv = value[i]) == 0 && i > 0; --i);
+	return i * udigits_v<value_t<T>> + log2(subv);
 }
 
 } /* namespace scith::ivec */
