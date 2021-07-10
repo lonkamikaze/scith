@@ -42,8 +42,6 @@ using iaccess::digits_as;
 using iaccess::access_as;
 using iaccess::bisect_as;
 
-/* declarations, this is what would be exported by a module */
-
 template <integral BaseT, std::size_t DigitsV>
 struct integer;
 
@@ -67,31 +65,6 @@ concept integer_variant = is_integer_variant_v<T>;
 
 template <typename T>
 concept integer_compatible = integer_variant<T> || integral<T>;
-
-template <integer_compatible T> constexpr bool isnan(T const & value);
-
-template <integral T> constexpr auto abs(T const value) noexcept;
-
-template <integer_variant T> requires signed_integral<value_t<T>>
-constexpr auto abs(T const & value) noexcept;
-
-template <integer_variant T> requires unsigned_integral<value_t<T>>
-constexpr auto abs(T value) noexcept;
-
-template <integer_compatible ... Ts>
-constexpr auto max(Ts const & ... values) noexcept;
-
-template <integer_compatible ... Ts>
-constexpr auto min(Ts const & ... values) noexcept;
-
-template <integer_variant T>
-constexpr std::ptrdiff_t log2(T const & value) noexcept;
-
-template <integer_compatible NumT, integer_compatible DenomT>
-struct div_t;
-
-template <integer_compatible NumT, integer_compatible DenomT>
-constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexcept;
 
 namespace ctag {
 	static constexpr struct raw_type {} const raw{};
@@ -560,36 +533,6 @@ constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
 	return result;
 }
 
-template <integer_compatible NumT, integer_compatible DenomT>
-struct div_t {
-	using value_type = select_common_value_t<NumT, DenomT>;
-	integer<value_type, digits_v<NumT>>             quot;
-	integer<value_type, min_digits_v<NumT, DenomT>> rem;
-};
-
-template <integer_compatible NumT, integer_compatible DenomT>
-constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexcept {
-	using divisor_type = decltype(max(abs(num), abs(denom)));
-	using quot_type = decltype(abs(num));
-	divisor_type const divisor{abs(denom)};
-	quot_type quotient;
-	auto quot{digits_as<bool>(quotient)};
-	auto rem{abs(integer{num})};
-	auto const l2div{log2(divisor)};
-	for (auto pow{log2(rem) - l2div}; pow >= 0;
-	     pow = min(log2(rem) - l2div, pow - 1)) {
-		auto const divpow{divisor << pow};
-		if (rem >= divpow) {
-			quot[pow] |= 1;
-			rem = {ctag::narrowing, (rem - divpow)};
-		}
-	}
-	return {
-		{ctag::narrowing, (num < 0) != (denom < 0) ? -quotient : quotient},
-		{ctag::narrowing, num < 0 ? -rem : rem}
-	};
-}
-
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator /(LT const & num, RT const & denom) noexcept {
 	return div(num, denom).quot;
@@ -711,6 +654,36 @@ constexpr std::ptrdiff_t log2(T const & value) noexcept {
 	value_t<T> subv{0};
 	for (; (subv = value[i]) == 0 && i > 0; --i);
 	return i * udigits_v<value_t<T>> + log2(subv);
+}
+
+template <integer_compatible NumT, integer_compatible DenomT>
+struct div_t {
+	using value_type = select_common_value_t<NumT, DenomT>;
+	integer<value_type, digits_v<NumT>>             quot;
+	integer<value_type, min_digits_v<NumT, DenomT>> rem;
+};
+
+template <integer_compatible NumT, integer_compatible DenomT>
+constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexcept {
+	using divisor_type = decltype(max(abs(num), abs(denom)));
+	using quot_type = decltype(abs(num));
+	divisor_type const divisor{abs(denom)};
+	quot_type quotient;
+	auto quot{digits_as<bool>(quotient)};
+	auto rem{abs(integer{num})};
+	auto const l2div{log2(divisor)};
+	for (auto pow{log2(rem) - l2div}; pow >= 0;
+	     pow = min(log2(rem) - l2div, pow - 1)) {
+		auto const divpow{divisor << pow};
+		if (rem >= divpow) {
+			quot[pow] |= 1;
+			rem = {ctag::narrowing, (rem - divpow)};
+		}
+	}
+	return {
+		{ctag::narrowing, (num < 0) != (denom < 0) ? -quotient : quotient},
+		{ctag::narrowing, num < 0 ? -rem : rem}
+	};
 }
 
 } /* namespace scith::ivec */
