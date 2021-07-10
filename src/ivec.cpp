@@ -1,4 +1,4 @@
-#include "ivec.hpp"
+#include "ivec_literals.hpp"
 
 using namespace scith::ivec;
 
@@ -317,27 +317,6 @@ static_assert(std::is_same_v<uint<24>, decltype(min(uint< 8>{}, uint<24>{}))>);
 static_assert(std::is_same_v<sint<24>, decltype(min(uint< 8>{}, sint<24>{}))>);
 static_assert(std::is_same_v<sint<24>, decltype(min(sint< 8>{}, uint<24>{}))>);
 static_assert(std::is_same_v<sint<24>, decltype(min(sint< 8>{}, sint<24>{}))>);
-
-static_assert(!is_power_of_two_v< 0>);
-static_assert( is_power_of_two_v< 1>);
-static_assert( is_power_of_two_v< 2>);
-static_assert(!is_power_of_two_v< 3>);
-static_assert( is_power_of_two_v< 4>);
-static_assert(!is_power_of_two_v< 5>);
-static_assert(!is_power_of_two_v< 6>);
-static_assert(!is_power_of_two_v< 7>);
-static_assert( is_power_of_two_v< 8>);
-static_assert(!is_power_of_two_v< 9>);
-static_assert(!is_power_of_two_v<10>);
-static_assert(!is_power_of_two_v<11>);
-static_assert(!is_power_of_two_v<12>);
-static_assert(!is_power_of_two_v<13>);
-static_assert(!is_power_of_two_v<14>);
-static_assert(!is_power_of_two_v<15>);
-static_assert( is_power_of_two_v<16>);
-static_assert(!is_power_of_two_v<17>);
-static_assert(!is_power_of_two_v<18>);
-static_assert(!is_power_of_two_v<19>);
 
 using namespace literals;
 

@@ -7,7 +7,7 @@ CXXFLAGS+= -march=native -O2 -pipe
 .cppm.pcm:
 	${CXX} ${CXXFLAGS} --precompile ${>:C/^/-fmodule-file=/:M*.pcm} $<
 
-all: traits.o itraits.o iaccess.o ivec.o
+all: traits.o itraits.o iaccess.o parse.o ivec.o
 
 depend.mk: src/*.[hc]pp
 	${CXX} ${CXXFLAGS} -M ${>:M*.cpp} > $@
