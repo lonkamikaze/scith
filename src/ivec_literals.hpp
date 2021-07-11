@@ -8,16 +8,17 @@ namespace scith::ivec::literals {
 
 using parse::integer_literal;
 
-template <integral BaseT, char ... Vs> requires integer_literal<Vs ...>
-constexpr auto parse() noexcept {
-	using uvalue = std::make_unsigned_t<BaseT>;
-	constexpr auto const radix{parse::radix_v<Vs ...>};
-	constexpr auto const digits{parse::digits_v<Vs ...>};
-	integer<BaseT, digits> result{};
-	auto && slices{bisect_as<uvalue>(result)};
-
-	for (auto const digit : parse::digits_intset<Vs ...>) {
-		auto carry{static_cast<uvalue>(digit)};
+template <integer_variant T>
+constexpr auto parse(std::string_view const str) noexcept {
+	auto const radix{parse::radix(str)};
+	T result{};
+	auto && slices{bisect_as<uvalue_t<T>>(result)};
+	for (auto const digit : parse::digits(str)) {
+		if (!parse::valid(digit, radix)) {
+			/* stop parse on invalid digit */
+			return result;
+		}
+		auto carry{static_cast<uvalue_t<T>>(digit)};
 		for (auto && slice : slices) {
 			carry += slice * radix;
 			slice = carry;
@@ -25,6 +26,12 @@ constexpr auto parse() noexcept {
 		}
 	}
 	return result;
+}
+
+template <integral BaseT, char ... Vs> requires integer_literal<Vs ...>
+constexpr auto parse() noexcept {
+	constexpr auto const digits{parse::digits_v<Vs ...>};
+	return parse<integer<BaseT, digits>>(parse::literal_view<Vs ...>{});
 }
 
 template <char ... Vs> requires integer_literal<Vs ...>

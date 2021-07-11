@@ -30,15 +30,7 @@ static_assert(0 == prefix_index("foobarbaz",  "foo", "foobarbam", "foobar"));
 static_assert(0 == prefix_index("foobarbaz",  'f', "foobarbam", "foobar", "foo"));
 static_assert(3 == prefix_index("foxbarbaz",  "foobarbam", "foobar", "foo"));
 
-static_assert('b' == tolower('b'));
-static_assert('b' == tolower('B'));
-static_assert('x' == tolower('x'));
-static_assert('x' == tolower('X'));
-static_assert('0' == tolower('0'));
-static_assert('1' == tolower('1'));
-static_assert('9' == tolower('9'));
-
-static_assert("foobar1337" == literal_view<'F', 'o', 'O', 'b', 'a', 'R', '1', '3', '3', '7'>{});
+static_assert("FoObaR1337" == literal_view<'F', 'o', 'O', 'b', 'a', 'R', '1', '3', '3', '7'>{});
 
 static_assert( 8 == radix_v<'0'>);
 static_assert(10 == radix_v<'1'>);
@@ -69,22 +61,32 @@ static_assert( 6 == digit('6'));
 static_assert( 7 == digit('7'));
 static_assert( 8 == digit('8'));
 static_assert( 9 == digit('9'));
+static_assert(10 == digit('A'));
+static_assert(11 == digit('B'));
+static_assert(12 == digit('C'));
+static_assert(13 == digit('D'));
+static_assert(14 == digit('E'));
+static_assert(15 == digit('F'));
 static_assert(10 == digit('a'));
 static_assert(11 == digit('b'));
 static_assert(12 == digit('c'));
 static_assert(13 == digit('d'));
 static_assert(14 == digit('e'));
 static_assert(15 == digit('f'));
+static_assert( 0  > digit(':'));
+static_assert( 0  > digit('@'));
+static_assert(15  < digit('g'));
+static_assert(15  < digit('G'));
 
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'0', 'b', '1', '2', 'f', 'c', '7'>);
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'0', 'B', '1', '2', 'f', 'c', '7'>);
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'0', '1', '2', 'f', 'c', '7'>);
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'1', '2', 'f', 'c', '7'>);
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'0', 'x', '1', '2', 'f', 'c', '7'>);
-static_assert(std::array{1, 2, 15, 12, 7} == digits_intset<'0', 'X', '1', '2', 'f', 'c', '7'>);
-static_assert(std::array{0}               == digits_intset<'0'>);
-static_assert(std::array{0}               == digits_intset<'0', '0'>);
-static_assert(std::array{0, 0}            == digits_intset<'0', '0', '0'>);
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'0', 'b', '1', '2', 'f', 'c', '7'>());
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'0', 'B', '1', '2', 'f', 'c', '7'>());
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'0', '1', '2', 'f', 'c', '7'>());
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'1', '2', 'f', 'c', '7'>());
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'0', 'x', '1', '2', 'f', 'c', '7'>());
+static_assert(std::array{1, 2, 15, 12, 7} == digits<'0', 'X', '1', '2', 'f', 'c', '7'>());
+static_assert(std::array{0}               == digits<'0'>());
+static_assert(std::array{0}               == digits<'0', '0'>());
+static_assert(std::array{0, 0}            == digits<'0', '0', '0'>());
 
 static_assert( 5 == digits_v<'0', 'b', '1', '2', 'f', 'c', '7'>);
 static_assert( 5 == digits_v<'0', 'B', '1', '2', 'f', 'c', '7'>);

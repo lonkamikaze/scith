@@ -4,6 +4,7 @@
 #include "itraits.hpp"
 
 #include <array>
+#include <compare>
 #include <string_view>
 
 namespace scith::parse {
@@ -17,7 +18,7 @@ constexpr std::size_t true_index() noexcept {
 
 template <typename ... TailTs>
 constexpr std::size_t true_index(bool const head, TailTs const ... tail) noexcept {
-	return head ? 0 : (1 + true_index(tail ...));
+	return !head * (1 + true_index(tail ...));
 }
 
 template <typename T, typename ... Ts>
@@ -30,73 +31,128 @@ constexpr std::size_t prefix_index(std::string_view const ref, Ts const ... need
 	return true_index(ref.starts_with(needles) ...);
 }
 
-constexpr char tolower(char const ch) noexcept {
-	return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
-}
-
 template <char ... Vs>
 struct literal_view : std::string_view {
-	static constexpr char const str[]{tolower(Vs) ..., '\0'};
-	constexpr literal_view() noexcept : std::string_view{str} {}
+	static constexpr std::array const str{Vs ...};
+	constexpr literal_view() noexcept : std::string_view{str.data(), str.size()} {}
 };
+
+constexpr unsigned radix(std::string_view const str) noexcept {
+	return (str.size() && str[0] >= '0' && str[0] <= '9') *
+	       std::array{16, 16, 2, 2, 8, 10}[prefix_index(str, "0x", "0X", "0b", "0B", '0')];
+}
 
 template <char ... Vs>
 constexpr auto radix() noexcept {
-	struct result { std::string_view digits; unsigned radix; };
-	constexpr literal_view<Vs ...> const view{};
-	if constexpr(view.starts_with("0x")) {
-		return result{view.substr(2), 16};
-	} else if constexpr(view.starts_with("0b")) {
-		return result{view.substr(2), 2};
-	} else if constexpr(view == "0") {
-		return result{view, 8};
-	} else if constexpr(view.starts_with('0')) {
-		return result{view.substr(1), 8};
-	} else if constexpr(view[0] > '0' && view[0] <= '9') {
-		return result{view, 10};
-	}
-	return result{"", 0};
+	return radix(literal_view<Vs ...>{});
+}
+
+constexpr std::string_view radix_tail(std::string_view const str) noexcept {
+	return str.substr(std::array{2, 2, 1, 0}[match_index((str != "0") * radix(str), 16, 2, 8)]);
 }
 
 template <char ... Vs>
-constexpr auto const radix_v{radix<Vs ...>().radix};
+constexpr auto const radix_v{radix<Vs ...>()};
 
 constexpr int digit(char const ch) noexcept {
-	return (ch >= 'a') * (ch - 'a' + 10) + (ch < 'a') * (ch - '0');
+	return std::array{(ch - 'a' + 10), (ch - 'A' + 10), -1, (ch - '0')}
+	                 [true_index(ch >= 'a', ch >= 'A', ch > '9')];
 }
 
-template <char ... Vs>
-constexpr auto digits() noexcept {
-	constexpr auto const digits_view{radix<Vs ...>().digits};
-	std::array<int, digits_view.size()> result{};
-	for (std::size_t i{0}; i < result.size(); ++i) {
-		result[i] = digit(digits_view[i]);
+struct digits_set {
+	std::string_view str;
+
+	constexpr digits_set(std::string_view const str) noexcept :
+	    str{radix_tail(str)} {}
+
+	constexpr std::size_t size() const noexcept {
+		return str.size();
 	}
-	return result;
+
+	constexpr int operator [](std::size_t const i) const noexcept {
+		return digit(str[i]);
+	}
+
+	constexpr auto operator <=>(auto const & set) const noexcept {
+		auto result{size() <=> set.size()};
+		for (std::size_t i{0}; result == 0 && i < size(); ++i) {
+			result = (*this)[i] <=> set[i];
+		}
+		return result;
+	}
+
+	constexpr bool operator ==(auto const & set) const noexcept {
+		return (*this <=> set) == 0;
+	}
+};
+
+struct digits_set_iterator {
+	digits_set const digits;
+	std::size_t i;
+
+	constexpr digits_set_iterator & operator ++() noexcept {
+		return ++i, *this;
+	}
+
+	constexpr int operator *() const noexcept {
+		return digits[i];
+	}
+
+	constexpr auto operator <=>(digits_set_iterator const & op) const noexcept {
+		return i <=> op.i;
+	}
+
+	constexpr auto operator ==(digits_set_iterator const & op) const noexcept {
+		return i == op.i;
+	}
+};
+
+constexpr digits_set_iterator begin(digits_set const set) noexcept {
+	return {set, 0};
+}
+
+constexpr digits_set_iterator end(digits_set const set) noexcept {
+	return {set, set.size()};
+}
+
+constexpr digits_set digits(std::string_view const str) noexcept {
+	return str;
 }
 
 template <char ... Vs>
-constexpr auto const digits_intset{digits<Vs ...>()};
+constexpr digits_set digits() noexcept {
+	return literal_view<Vs ...>{};
+}
 
 template <char ... Vs>
 constexpr std::size_t const digits_v{0};
 
 template <char ... Vs>
 requires (radix_v<Vs ...> == (1 << log2(radix_v<Vs ...>)))
-constexpr std::size_t const digits_v<Vs ...>{log2(radix_v<Vs ...>) * digits_intset<Vs ...>.size()};
+constexpr std::size_t const digits_v<Vs ...>{log2(radix_v<Vs ...>) * digits<Vs ...>().size()};
 
 template <char ... Vs>
 requires (10 == radix_v<Vs ...>)
-constexpr std::size_t const digits_v<Vs ...>{cdiv(digits_intset<Vs ...>.size() * 3322, 1000)};
+constexpr std::size_t const digits_v<Vs ...>{cdiv(digits<Vs ...>().size() * 3322, 1000)};
 
-template <char ... Vs>
-constexpr bool valid() noexcept {
-	for (auto const digit : digits_intset<Vs ...>) {
-		if (digit < 0 || digit >= radix_v<Vs ...>) {
+constexpr bool valid(int const digit, unsigned const radix) noexcept {
+	return digit >= 0 && digit < radix;
+}
+
+constexpr bool valid(std::string_view const str) noexcept {
+	auto const radix{parse::radix(str)};
+	digits_set const digits{str};
+	for (auto const digit : digits) {
+		if (!valid(digit, radix)) {
 			return false;
 		}
 	}
-	return digits_intset<Vs ...>.size() && (radix_v<Vs ...> > 0);
+	return digits.size();
+}
+
+template <char ... Vs>
+constexpr bool valid() noexcept {
+	return valid(literal_view<Vs ...>{});
 }
 
 template <char ... Vs>
