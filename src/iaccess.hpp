@@ -13,21 +13,16 @@ namespace scith::iaccess {
 using namespace itraits;
 
 template <typename T>
-struct is_integral_array : std::false_type {};
+constexpr auto const is_integral_array_v{false};
 
 template <integral T, std::size_t CountV>
-struct is_integral_array<T[CountV]> : std::true_type {};
+constexpr auto const is_integral_array_v<T[CountV]>{true};
 
 template <integral T, std::size_t CountV>
-struct is_integral_array<std::array<T, CountV>> : std::true_type {};
+constexpr auto const is_integral_array_v<std::array<T, CountV>>{true};
 
 template <integral T, std::size_t CountV>
-struct is_integral_array<std::array<T, CountV> const> : std::true_type {};
-
-template <typename T>
-constexpr auto const is_integral_array_v{
-	is_integral_array<T>::value
-};
+constexpr auto const is_integral_array_v<std::array<T, CountV> const>{true};
 
 template <typename T>
 concept integral_array = is_integral_array_v<T>;

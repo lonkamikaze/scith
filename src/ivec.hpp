@@ -49,16 +49,13 @@ template<integral T>
 integer(T const) -> integer<T, digits_v<T>>;
 
 template <typename T>
-struct is_integer_variant : std::false_type {};
+constexpr auto const is_integer_variant_v{false};
 
 template <integral BaseT, std::size_t DigitsV>
-struct is_integer_variant<integer<BaseT, DigitsV>> : std::true_type {};
+constexpr auto const is_integer_variant_v<integer<BaseT, DigitsV>>{true};
 
 template <integral BaseT, std::size_t DigitsV>
-struct is_integer_variant<integer<BaseT, DigitsV> const> : std::true_type {};
-
-template <typename T>
-constexpr auto const is_integer_variant_v{is_integer_variant<T>::value};
+constexpr auto const is_integer_variant_v<integer<BaseT, DigitsV> const>{true};
 
 template <typename T>
 concept integer_variant = is_integer_variant_v<T>;
