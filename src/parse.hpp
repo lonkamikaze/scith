@@ -59,10 +59,16 @@ constexpr int digit(char const ch) noexcept {
 	                 [true_index(ch >= 'a', ch >= 'A', ch > '9')];
 }
 
-struct digits_set {
+template <class ContainerT, typename ValueT>
+concept container = requires(ContainerT & c, ValueT v) {
+	std::size_t{c.size()};
+	c[0] <=> v;
+};
+
+struct digits_view {
 	std::string_view str;
 
-	constexpr digits_set(std::string_view const str) noexcept :
+	constexpr digits_view(std::string_view const str) noexcept :
 	    str{radix_tail(str)} {}
 
 	constexpr std::size_t size() const noexcept {
@@ -73,54 +79,50 @@ struct digits_set {
 		return digit(str[i]);
 	}
 
-	constexpr auto operator <=>(auto const & set) const noexcept {
-		auto result{size() <=> set.size()};
+	constexpr auto operator <=>(container<int> auto const & op) const noexcept {
+		auto result{size() <=> op.size()};
 		for (std::size_t i{0}; result == 0 && i < size(); ++i) {
-			result = (*this)[i] <=> set[i];
+			result = (*this)[i] <=> op[i];
 		}
 		return result;
 	}
 
-	constexpr bool operator ==(auto const & set) const noexcept {
-		return (*this <=> set) == 0;
+	constexpr bool operator ==(container<int> auto const & op) const noexcept {
+		return (*this <=> op) == 0;
 	}
 };
 
-struct digits_set_iterator {
-	digits_set const digits;
+struct digits_view_iterator {
+	digits_view const digits;
 	std::size_t i;
 
-	constexpr digits_set_iterator & operator ++() noexcept {
+	constexpr digits_view_iterator & operator ++() noexcept {
 		return ++i, *this;
 	}
 
-	constexpr int operator *() const noexcept {
+	constexpr auto operator *() const noexcept {
 		return digits[i];
 	}
 
-	constexpr auto operator <=>(digits_set_iterator const & op) const noexcept {
+	constexpr auto operator <=>(digits_view_iterator const & op) const noexcept {
 		return i <=> op.i;
 	}
 
-	constexpr auto operator ==(digits_set_iterator const & op) const noexcept {
+	constexpr auto operator ==(digits_view_iterator const & op) const noexcept {
 		return i == op.i;
 	}
 };
 
-constexpr digits_set_iterator begin(digits_set const set) noexcept {
+constexpr digits_view_iterator begin(digits_view const set) noexcept {
 	return {set, 0};
 }
 
-constexpr digits_set_iterator end(digits_set const set) noexcept {
+constexpr digits_view_iterator end(digits_view const set) noexcept {
 	return {set, set.size()};
 }
 
-constexpr digits_set digits(std::string_view const str) noexcept {
-	return str;
-}
-
 template <char ... Vs>
-constexpr digits_set digits() noexcept {
+constexpr digits_view digits() noexcept {
 	return literal_view<Vs ...>{};
 }
 
@@ -141,7 +143,7 @@ constexpr bool valid(int const digit, unsigned const radix) noexcept {
 
 constexpr bool valid(std::string_view const str) noexcept {
 	auto const radix{parse::radix(str)};
-	digits_set const digits{str};
+	digits_view const digits{str};
 	for (auto const digit : digits) {
 		if (!valid(digit, radix)) {
 			return false;

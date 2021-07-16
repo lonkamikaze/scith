@@ -13,7 +13,7 @@ constexpr auto parse(std::string_view const str) noexcept {
 	auto const radix{parse::radix(str)};
 	T result{};
 	auto && slices{bisect_as<uvalue_t<T>>(result)};
-	for (auto const digit : parse::digits(str)) {
+	for (auto const digit : parse::digits_view{str}) {
 		if (!parse::valid(digit, radix)) {
 			/* stop parse on invalid digit */
 			return result;
