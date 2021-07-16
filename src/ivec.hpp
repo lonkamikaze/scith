@@ -159,20 +159,19 @@ constexpr auto bisect_as(IntsT & value) {
 	return bisect_as<T>(value.values);
 }
 
-template <integer_variant T> requires signed_integral<value_t<T>>
-constexpr T & clonesign(T & dst, auto const & src) {
-	return digits_as<value_t<T>>(dst)[T::digits] = -(src < 0), dst;
-}
-
 template <integer_variant T> requires unsigned_integral<value_t<T>>
-constexpr T & clonesign(T & dst, auto const &) {
-	return digits_as<value_t<T>>(dst)[T::digits] = 0, dst;
-}
-
-template <integer_variant T> requires unsigned_integral<value_t<T>>
-constexpr T & fix_pad_if_unsigned(T & value) {
+constexpr T & fix_pad(T & value) {
 	return digits_as<value_t<T>>(value)[T::digits] = 0, value;
 }
+
+template <integer_variant T> requires signed_integral<value_t<T>>
+constexpr T & fix_pad(T & value) {
+	auto && pad{digits_as<uvalue_t<T>>(value)[T::digits]};
+	return pad = -(pad & 1), value;
+}
+
+template <integer_variant T> requires unsigned_integral<value_t<T>>
+constexpr T & fix_pad_if_unsigned(T & value) { return fix_pad(value); }
 
 template <integer_variant T> requires signed_integral<value_t<T>>
 constexpr T & fix_pad_if_unsigned(T & value) { return value; }
@@ -185,7 +184,7 @@ integer(ctag::narrowing_type, T const & value) noexcept : values{} {
 	for (std::size_t i{0}; i < size(); ++i) {
 		this->values[i] = values[i];
 	}
-	clonesign(*this, value);
+	fix_pad(*this);
 }
 
 template <integral BaseT, std::size_t DigitsV>
@@ -266,7 +265,7 @@ constexpr T operator <<(T const & value, std::ptrdiff_t const lshift) noexcept {
 		result[i] = values[i * value_digits - lshift];
 	}
 	if (lshift > 0) {
-		clonesign(result, value);
+		fix_pad(result);
 	}
 	return result;
 }

@@ -443,10 +443,10 @@ static_assert(expect(uint<48>{ctag::narrowing, -0x123456789abcdf0_ivec},
 static_assert( isnan(sint<48>{ctag::raw,       0x76543210, 0xfedcba98}));
 static_assert(!isnan(sint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)}));
 static_assert(expect(sint<48>{ctag::narrowing, static_cast<int64_t>(0xfedcba9876543210)},
-                     0x76543210, 0xffffba98));
+                     0x76543210, 0x0000ba98));
 static_assert(!isnan(sint<48>{ctag::narrowing, -0x123456789abcdf0_ivec}));
 static_assert(expect(sint<48>{ctag::narrowing, -0x123456789abcdf0_ivec},
-                     0x76543210, 0xffffba98));
+                     0x76543210, 0x0000ba98));
 
 /* comparison */
 
@@ -541,23 +541,23 @@ static_assert(-   0x55555555555555555555556_ivec == ~+  0x5555555555555555555555
 
 /* operator <<, operator >> */
 
-static_assert(  0x765432100_ivec ==   0x876543210_ivec  << 4);
-static_assert(- 0x765432100_ivec == (-0x876543210_ivec) << 4);
-static_assert(  0x000000000_ivec ==   0x876543210_ivec  << 128);
-static_assert(-0x1000000000_ivec == (-0x876543210_ivec) << 128);
-static_assert(- 0x000000001_ivec == (-0x000000001_ivec) >> 1);
-static_assert(- 0x000000001_ivec == (-0x000000001_ivec) >> 128);
-static_assert(  0x00000ffff_ivec ==   0xfffffffff_ivec  >> 20);
-static_assert(- 0x000010000_ivec == (-0xfffffffff_ivec) >> 20);
+static_assert( 0x765432100_ivec ==   0x876543210_ivec  << 4);
+static_assert(-0x765432100_ivec == (-0x876543210_ivec) << 4);
+static_assert( 0x000000000_ivec ==   0x876543210_ivec  << 128);
+static_assert( 0x000000000_ivec == (-0x876543210_ivec) << 128);
+static_assert(-0x000000001_ivec == (-0x000000001_ivec) >> 1);
+static_assert(-0x000000001_ivec == (-0x000000001_ivec) >> 128);
+static_assert( 0x00000ffff_ivec ==   0xfffffffff_ivec  >> 20);
+static_assert(-0x000010000_ivec == (-0xfffffffff_ivec) >> 20);
 
-static_assert(  0x765432100_ivec ==   0x876543210_ivec  >> -4);
-static_assert(- 0x765432100_ivec == (-0x876543210_ivec) >> -4);
-static_assert(  0x000000000_ivec ==   0x876543210_ivec  >> -128);
-static_assert(-0x1000000000_ivec == (-0x876543210_ivec) >> -128);
-static_assert(- 0x000000001_ivec == (-0x000000001_ivec) << -1);
-static_assert(- 0x000000001_ivec == (-0x000000001_ivec) << -128);
-static_assert(  0x00000ffff_ivec ==   0xfffffffff_ivec  << -20);
-static_assert(- 0x000010000_ivec == (-0xfffffffff_ivec) << -20);
+static_assert( 0x765432100_ivec ==   0x876543210_ivec  >> -4);
+static_assert(-0x765432100_ivec == (-0x876543210_ivec) >> -4);
+static_assert( 0x000000000_ivec ==   0x876543210_ivec  >> -128);
+static_assert( 0x000000000_ivec == (-0x876543210_ivec) >> -128);
+static_assert(-0x000000001_ivec == (-0x000000001_ivec) << -1);
+static_assert(-0x000000001_ivec == (-0x000000001_ivec) << -128);
+static_assert( 0x00000ffff_ivec ==   0xfffffffff_ivec  << -20);
+static_assert(-0x000010000_ivec == (-0xfffffffff_ivec) << -20);
 
 static_assert( 0x12345678_ivec32 ==   0x2468acf0_ivec32  >> 1);
 static_assert( 0x2468acf0_ivec32 ==   0x12345678_ivec32  << 1);
