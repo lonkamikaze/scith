@@ -304,6 +304,12 @@ class ints_access {
 	}
 };
 
+template <integrals IntsT>
+class ints_access<bool, IntsT> : public ints_digits<bool, IntsT> {
+	public:
+	using ints_digits<bool, IntsT>::ints_digits;
+};
+
 template <integral T, integrals IntsT>
 class ints_bisect_reference {
 	private:

@@ -655,7 +655,7 @@ constexpr div_t<NumT, DenomT> div(NumT const & num, DenomT const & denom) noexce
 	using quot_type = decltype(abs(num));
 	divisor_type const divisor{abs(denom)};
 	quot_type quotient;
-	auto quot{digits_as<bool>(quotient)};
+	auto quot{access_as<bool>(quotient)};
 	auto rem{abs(integer{num})};
 	auto const l2div{log2(divisor)};
 	for (auto pow{log2(rem) - l2div}; pow >= 0;
