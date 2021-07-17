@@ -66,6 +66,7 @@ concept integer_compatible = integer_variant<T> || integral<T>;
 namespace ctag {
 	static constexpr struct raw_type {} const raw{};
 	static constexpr struct narrowing_type {} const narrowing{};
+	static constexpr struct ignore_sign_type {} const ignore_sign{};
 } /* namespace ctag */
 
 template <integral T, std::size_t DigitsV>
@@ -89,8 +90,16 @@ struct integer {
 	constexpr integer(ctag::narrowing_type, T const & value) noexcept;
 
 	template <integer_compatible T>
+	requires (DigitsV >= digits_v<T>)
+	constexpr integer(ctag::ignore_sign_type, T const & value) noexcept :
+	    integer{ctag::narrowing, value} {}
+
+	template <integer_compatible T>
 	requires (DigitsV >= digits_v<T> && signed_integral<BaseT> >= signed_integral<value_t<T>>)
 	constexpr integer(T const & value) noexcept;
+
+	template <integral T>
+	explicit constexpr operator T() const noexcept;
 
 	values_type values;
 
@@ -176,6 +185,12 @@ constexpr T & fix_pad_if_unsigned(T & value) { return fix_pad(value); }
 template <integer_variant T> requires signed_integral<value_t<T>>
 constexpr T & fix_pad_if_unsigned(T & value) { return value; }
 
+template <integer_variant T> requires unsigned_integral<value_t<T>>
+constexpr T & fix_pad_if_signed(T & value) { return value; }
+
+template <integer_variant T> requires signed_integral<value_t<T>>
+constexpr T & fix_pad_if_signed(T & value) { return fix_pad(value); }
+
 template <integral BaseT, std::size_t DigitsV>
 template <integer_compatible T>
 constexpr integer<BaseT, DigitsV>::
@@ -197,6 +212,12 @@ integer(T const & value) noexcept : values{} {
 	for (std::size_t i{0}; i < size(); ++i) {
 		this->values[i] = values[i];
 	}
+}
+
+template <integral BaseT, std::size_t DigitsV>
+template <integral T>
+constexpr integer<BaseT, DigitsV>::operator T() const noexcept {
+	return access_as<T>(*this)[0];
 }
 
 template <integer_compatible T>
@@ -271,8 +292,31 @@ constexpr T operator <<(T const & value, std::ptrdiff_t const lshift) noexcept {
 }
 
 template <integer_variant T>
+constexpr T & operator <<=(T & value, std::ptrdiff_t const lshift) noexcept {
+	using value_type = value_t<T>;
+	constexpr std::ptrdiff_t const value_digits{udigits_v<value_type>};
+	auto const && values{digits_as<value_type>(value)};
+	if (lshift > 0) {
+		for (auto i{static_cast<std::ptrdiff_t>(value.size()) - 1}; i >= 0; --i) {
+			value[i] = values[i * value_digits - lshift];
+		}
+		fix_pad(value);
+	} else {
+		for (std::ptrdiff_t i{0}; i < value.size(); ++i) {
+			value[i] = values[i * value_digits - lshift];
+		}
+	}
+	return value;
+}
+
+template <integer_variant T>
 constexpr T operator >>(T const & value, std::ptrdiff_t const rshift) noexcept {
 	return value << -rshift;
+}
+
+template <integer_variant T>
+constexpr T & operator >>=(T & value, std::ptrdiff_t const rshift) noexcept {
+	return value <<= -rshift;
 }
 
 template <integer_compatible LT, integer_compatible RT>
@@ -296,17 +340,39 @@ constexpr auto operator &(LT const & lhs, RT const & rhs) noexcept {
 	return result;
 }
 
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator &=(LT & lhs, RT const & rhs) noexcept {
+	using uvalue = uvalue_t<LT>;
+	auto && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < lvals.size(); ++i) {
+		lvals[i] &= rvals[i];
+	}
+	return fix_pad_if_signed(lhs);
+}
+
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator |(LT const & lhs, RT const & rhs) noexcept {
 	using value = select_common_value_t<LT, RT>;
 	using uvalue = std::make_unsigned_t<value>;
 	integer<value, max_digits_v<LT, RT>> result;
-	auto && lvals{access_as<uvalue>(lhs)};
-	auto && rvals{access_as<uvalue>(rhs)};
+	auto const && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
 	for (std::size_t i{0}; i < result.size(); ++i) {
 		result[i] = lvals[i] | rvals[i];
 	}
 	return result;
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator |=(LT & lhs, RT const & rhs) noexcept {
+	using uvalue = uvalue_t<LT>;
+	auto && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < lvals.size(); ++i) {
+		lvals[i] |= rvals[i];
+	}
+	return fix_pad(lhs);
 }
 
 template <integer_compatible LT, integer_compatible RT>
@@ -314,12 +380,23 @@ constexpr auto operator ^(LT const & lhs, RT const & rhs) noexcept {
 	using value = select_common_value_t<LT, RT>;
 	using uvalue = std::make_unsigned_t<value>;
 	integer<value, max_digits_v<LT, RT>> result;
-	auto && lvals{access_as<uvalue>(lhs)};
-	auto && rvals{access_as<uvalue>(rhs)};
+	auto const && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
 	for (std::size_t i{0}; i < result.size(); ++i) {
 		result[i] = lvals[i] ^ rvals[i];
 	}
 	return result;
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator ^=(LT & lhs, RT const & rhs) noexcept {
+	using uvalue = uvalue_t<LT>;
+	auto && lvals{access_as<uvalue>(lhs)};
+	auto const && rvals{access_as<uvalue>(rhs)};
+	for (std::size_t i{0}; i < lvals.size(); ++i) {
+		lvals[i] ^= rvals[i];
+	}
+	return fix_pad(lhs);
 }
 
 template <integer_compatible LT, integer_compatible RT>
@@ -340,6 +417,22 @@ constexpr auto operator +(LT const & lop, RT const & rop) noexcept {
 		carry >>= slice;
 	}
 	return result;
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator +=(LT & lop, RT const & rop) noexcept {
+	using uvalue = uvalue_t<LT>;
+	constexpr auto const slice{digits_v<uvalue> / 2};
+
+	auto && lslices{bisect_as<uvalue>(lop)};
+	auto const && rslices{bisect_as<uvalue>(rop)};
+	uvalue carry{0};
+	for (std::size_t i{0}; i < lslices.size(); ++i) {
+		carry += lslices[i] + rslices[i];
+		lslices[i] = carry;
+		carry >>= slice;
+	}
+	return fix_pad(lop);
 }
 
 template <integer_compatible LT, integer_compatible RT>
@@ -365,17 +458,33 @@ constexpr auto operator -(LT const & lop, RT const & rop) noexcept {
 	return result;
 }
 
-template <integer_compatible LT, integer_compatible RT>
-constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
-	using value = select_common_value_t<LT, RT>;
-	using uvalue = std::make_unsigned_t<value>;
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator -=(LT & lop, RT const & rop) noexcept {
+	using uvalue = uvalue_t<LT>;
+	constexpr auto const slice{digits_v<uvalue> / 2};
+	constexpr auto const mask{(uvalue{1} << slice) - 1};
+
+	auto && lslices{bisect_as<uvalue>(lop)};
+	auto const && rslices{bisect_as<uvalue>(rop)};
+	uvalue carry{1};
+	for (std::size_t i{0}; i < lslices.size(); ++i) {
+		carry += lslices[i] + (rslices[i] ^ mask);
+		lslices[i] = carry;
+		carry >>= slice;
+	}
+	return fix_pad(lop);
+}
+
+template <integer_variant T, integer_compatible LT, integer_compatible RT>
+constexpr auto mul_impl(LT const & lop, RT const & rop) noexcept {
+	using uvalue = uvalue_t<T>;
 	constexpr auto const digits{digits_v<uvalue>};
 	constexpr auto const slice{digits / 2};
 
-	integer<value, sum_digits_v<LT, RT>> result{};
-	auto slices{bisect_as<uvalue>(result)};
-	auto const lslices{bisect_as<uvalue>(lop)};
-	auto const rslices{bisect_as<uvalue>(rop)};
+	T result{};
+	auto && slices{bisect_as<uvalue>(result)};
+	auto const && lslices{bisect_as<uvalue>(lop)};
+	auto const && rslices{bisect_as<uvalue>(rop)};
 	for (std::size_t i{0}; i < slices.size(); ++i) {
 		for (std::size_t p{0}; p <= i; ++p) {
 			uvalue carry = lslices[p] * rslices[i - p];
@@ -389,13 +498,35 @@ constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
 }
 
 template <integer_compatible LT, integer_compatible RT>
+constexpr auto operator *(LT const & lop, RT const & rop) noexcept {
+	using value = select_common_value_t<LT, RT>;
+	using result = integer<value, sum_digits_v<LT, RT>>;
+	return mul_impl<result>(lop, rop);
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator *=(LT & lop, RT const & rop) noexcept {
+	return fix_pad(lop = mul_impl<LT>(lop, rop));
+}
+
+template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator /(LT const & num, RT const & denom) noexcept {
 	return div(num, denom).quot;
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator /=(LT & num, RT const & denom) noexcept {
+	return num = {ctag::ignore_sign, num / denom};
 }
 
 template <integer_compatible LT, integer_compatible RT>
 constexpr auto operator %(LT const & num, RT const & denom) noexcept {
 	return div(num, denom).rem;
+}
+
+template <integer_variant LT, integer_compatible RT>
+constexpr LT & operator %=(LT & num, RT const & denom) noexcept {
+	return num = {ctag::ignore_sign, num % denom};
 }
 
 template <integral T>

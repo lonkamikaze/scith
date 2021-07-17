@@ -564,6 +564,39 @@ static_assert( 0x2468acf0_ivec32 ==   0x12345678_ivec32  << 1);
 static_assert(-0x12345678_ivec32 == (-0x2468acf0_ivec32) >> 1);
 static_assert(-0x2468acf0_ivec32 == (-0x12345678_ivec32) << 1);
 
+/* operator <<=, operator >>= */
+
+constexpr auto ls_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs <<= rhs;
+}
+
+constexpr auto rs_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs >>= rhs;
+}
+
+static_assert( 0x765432100_ivec == ls_assign( 0x876543210_ivec, 4));
+static_assert(-0x765432100_ivec == ls_assign(-0x876543210_ivec, 4));
+static_assert( 0x000000000_ivec == ls_assign( 0x876543210_ivec, 128));
+static_assert( 0x000000000_ivec == ls_assign(-0x876543210_ivec, 128));
+static_assert(-0x000000001_ivec == rs_assign(-0x000000001_ivec, 1));
+static_assert(-0x000000001_ivec == rs_assign(-0x000000001_ivec, 128));
+static_assert( 0x00000ffff_ivec == rs_assign( 0xfffffffff_ivec, 20));
+static_assert(-0x000010000_ivec == rs_assign(-0xfffffffff_ivec, 20));
+
+static_assert( 0x765432100_ivec == rs_assign( 0x876543210_ivec, -4));
+static_assert(-0x765432100_ivec == rs_assign(-0x876543210_ivec, -4));
+static_assert( 0x000000000_ivec == rs_assign( 0x876543210_ivec, -128));
+static_assert( 0x000000000_ivec == rs_assign(-0x876543210_ivec, -128));
+static_assert(-0x000000001_ivec == ls_assign(-0x000000001_ivec, -1));
+static_assert(-0x000000001_ivec == ls_assign(-0x000000001_ivec, -128));
+static_assert( 0x00000ffff_ivec == ls_assign( 0xfffffffff_ivec, -20));
+static_assert(-0x000010000_ivec == ls_assign(-0xfffffffff_ivec, -20));
+
+static_assert( 0x12345678_ivec32 == rs_assign( 0x2468acf0_ivec32, 1));
+static_assert( 0x2468acf0_ivec32 == ls_assign( 0x12345678_ivec32, 1));
+static_assert(-0x12345678_ivec32 == rs_assign(-0x2468acf0_ivec32, 1));
+static_assert(-0x2468acf0_ivec32 == ls_assign(-0x12345678_ivec32, 1));
+
 /* operator & */
 
 static_assert( 0x123456789abcdef_ivec == (  0x123456789abcdef_ivec  & -     1_ivec));
@@ -580,6 +613,45 @@ static_assert( 0x1030507090b0d0f_ivec == (  0x123456789abcdef_ivec  &  0xf0f0f0f
 static_assert( 0x020406080a0c0e1_ivec == (  0x123456789abcdef_ivec  & -0xf0f0f0f0f0f0f0f_ivec));
 static_assert( 0xe0c0a0806040201_ivec == ((-0x123456789abcdef_ivec) &  0xf0f0f0f0f0f0f0f_ivec));
 static_assert(-0xf2f4f6f8fafcfef_ivec == ((-0x123456789abcdef_ivec) & -0xf0f0f0f0f0f0f0f_ivec));
+
+static_assert(  0x0_ivec == (~ 0x0_ivec &  0x10_ivec));
+static_assert(  0x0_ivec == (~ 0x0_ivec & -0x10_ivec));
+static_assert( 0x10_ivec == (~+0x0_ivec &  0x10_ivec));
+static_assert(-0x10_ivec == (~+0x0_ivec & -0x10_ivec));
+static_assert(  0x0_ivec == ( 0x10_ivec & ~ 0x0_ivec));
+static_assert(  0x0_ivec == (-0x10_ivec & ~ 0x0_ivec));
+static_assert( 0x10_ivec == ( 0x10_ivec & ~+0x0_ivec));
+static_assert(-0x10_ivec == (-0x10_ivec & ~+0x0_ivec));
+
+/* operator &= */
+
+constexpr auto and_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs &= rhs;
+}
+
+static_assert( 0x123456789abcdef_ivec == and_assign( 0x123456789abcdef_ivec, -     1_ivec));
+static_assert(                 0_ivec == and_assign( 0x123456789abcdef_ivec,       0_ivec));
+static_assert( 0x00000000000ffff_ivec == and_assign(-0x000000000000001_ivec,  0xffff_ivec));
+static_assert( 0xfffffffffffffff_ivec == and_assign( 0xfffffffffffffff_ivec, -   0b1_ivec));
+static_assert(-                1_ivec == and_assign(-0x000000000000001_ivec, -   0b1_ivec));
+
+static_assert( 0x1030507090b0d0f_ivec == and_assign( 0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert( 0xe0c0a0806040201_ivec == and_assign( 0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert( 0x020406080a0c0e1_ivec == and_assign(-0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert(-0xf2f4f6f8fafcfef_ivec == and_assign(-0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert( 0x1030507090b0d0f_ivec == and_assign( 0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0x020406080a0c0e1_ivec == and_assign( 0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0xe0c0a0806040201_ivec == and_assign(-0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xf2f4f6f8fafcfef_ivec == and_assign(-0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+
+static_assert(  0x0_ivec == and_assign(~ 0x0_ivec,  0x10_ivec));
+static_assert(  0x0_ivec == and_assign(~ 0x0_ivec, -0x10_ivec));
+static_assert(-0x10_ivec == and_assign(~+0x0_ivec,  0x10_ivec));
+static_assert(-0x10_ivec == and_assign(~+0x0_ivec, -0x10_ivec));
+static_assert(  0x0_ivec == and_assign( 0x10_ivec, ~ 0x0_ivec));
+static_assert(  0x0_ivec == and_assign(-0x10_ivec, ~ 0x0_ivec));
+static_assert( 0x10_ivec == and_assign( 0x10_ivec, ~+0x0_ivec));
+static_assert(-0x10_ivec == and_assign(-0x10_ivec, ~+0x0_ivec));
 
 /* operator | */
 
@@ -598,6 +670,45 @@ static_assert(-0xe0c0a0806040201_ivec == (  0x123456789abcdef_ivec  | -0xf0f0f0f
 static_assert(-0x020406080a0c0e1_ivec == ((-0x123456789abcdef_ivec) |  0xf0f0f0f0f0f0f0f_ivec));
 static_assert(-0x1030507090b0d0f_ivec == ((-0x123456789abcdef_ivec) | -0xf0f0f0f0f0f0f0f_ivec));
 
+static_assert( 0x10_ivec == (  0x0_ivec |  0x10_ivec));
+static_assert(-0x10_ivec == (  0x0_ivec | -0x10_ivec));
+static_assert( 0x10_ivec == (+ 0x0_ivec |  0x10_ivec));
+static_assert(-0x10_ivec == (+ 0x0_ivec | -0x10_ivec));
+static_assert( 0x10_ivec == ( 0x10_ivec |   0x0_ivec));
+static_assert(-0x10_ivec == (-0x10_ivec |   0x0_ivec));
+static_assert( 0x10_ivec == ( 0x10_ivec | + 0x0_ivec));
+static_assert(-0x10_ivec == (-0x10_ivec | + 0x0_ivec));
+
+/* operator |= */
+
+constexpr auto or_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs |= rhs;
+}
+
+static_assert( 0xfffffffffffffff_ivec == or_assign( 0x123456789abcdef_ivec, -     1_ivec));
+static_assert( 0x123456789abcdef_ivec == or_assign( 0x123456789abcdef_ivec,       0_ivec));
+static_assert(-                1_ivec == or_assign(-0x000000000000001_ivec,  0xffff_ivec));
+static_assert( 0xfffffffffffffff_ivec == or_assign( 0xfffffffffffffff_ivec, -   0b1_ivec));
+static_assert(-                1_ivec == or_assign(-0x000000000000001_ivec, -   0b1_ivec));
+
+static_assert( 0xf2f4f6f8fafcfef_ivec == or_assign( 0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert( 0xfdfbf9f7f5f3f1f_ivec == or_assign( 0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert(-0xe0c0a0806040201_ivec == or_assign(-0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert(-0x1030507090b0d0f_ivec == or_assign(-0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert( 0xf2f4f6f8fafcfef_ivec == or_assign( 0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0x1f3f5f7f9fbfdff_ivec == or_assign( 0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0x020406080a0c0e1_ivec == or_assign(-0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0x1030507090b0d0f_ivec == or_assign(-0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+
+static_assert(  0x0_ivec == or_assign(  0x0_ivec,  0x10_ivec));
+static_assert(  0x0_ivec == or_assign(  0x0_ivec, -0x10_ivec));
+static_assert(-0x10_ivec == or_assign(+ 0x0_ivec,  0x10_ivec));
+static_assert(-0x10_ivec == or_assign(+ 0x0_ivec, -0x10_ivec));
+static_assert( 0x10_ivec == or_assign( 0x10_ivec,   0x0_ivec));
+static_assert(-0x10_ivec == or_assign(-0x10_ivec,   0x0_ivec));
+static_assert( 0x10_ivec == or_assign( 0x10_ivec, + 0x0_ivec));
+static_assert(-0x10_ivec == or_assign(-0x10_ivec, + 0x0_ivec));
+
 /* operator ^ */
 
 static_assert(- 0x123456789abcdf0_ivec == (  0x123456789abcdef_ivec  ^ -     1_ivec));
@@ -614,6 +725,45 @@ static_assert( 0xe2c4a6886a4c2e0_ivec == (  0x123456789abcdef_ivec  ^  0xf0f0f0f
 static_assert(-0xe2c4a6886a4c2e2_ivec == (  0x123456789abcdef_ivec  ^ -0xf0f0f0f0f0f0f0f_ivec));
 static_assert(-0xe2c4a6886a4c2e2_ivec == ((-0x123456789abcdef_ivec) ^  0xf0f0f0f0f0f0f0f_ivec));
 static_assert( 0xe2c4a6886a4c2e0_ivec == ((-0x123456789abcdef_ivec) ^ -0xf0f0f0f0f0f0f0f_ivec));
+
+static_assert( 0x10_ivec == (  0x0_ivec ^  0x10_ivec));
+static_assert(-0x10_ivec == (  0x0_ivec ^ -0x10_ivec));
+static_assert( 0x10_ivec == (+ 0x0_ivec ^  0x10_ivec));
+static_assert(-0x10_ivec == (+ 0x0_ivec ^ -0x10_ivec));
+static_assert( 0x10_ivec == ( 0x10_ivec ^   0x0_ivec));
+static_assert(-0x10_ivec == (-0x10_ivec ^   0x0_ivec));
+static_assert( 0x10_ivec == ( 0x10_ivec ^ + 0x0_ivec));
+static_assert(-0x10_ivec == (-0x10_ivec ^ + 0x0_ivec));
+
+/* operator ^= */
+
+constexpr auto xor_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs ^= rhs;
+}
+
+static_assert( 0xedcba9876543210_ivec == xor_assign( 0x123456789abcdef_ivec, -     1_ivec));
+static_assert( 0x123456789abcdef_ivec == xor_assign( 0x123456789abcdef_ivec,       0_ivec));
+static_assert(-          0x10000_ivec == xor_assign(-0x000000000000001_ivec,  0xffff_ivec));
+static_assert( 0x000000000000000_ivec == xor_assign( 0xfffffffffffffff_ivec, -   0b1_ivec));
+static_assert(                 0_ivec == xor_assign(-0x000000000000001_ivec, -   0b1_ivec));
+
+static_assert( 0xe2c4a6886a4c2e0_ivec == xor_assign( 0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert( 0x1d3b597795b3d1e_ivec == xor_assign( 0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == xor_assign(-0xf0f0f0f0f0f0f0f_ivec,  0x123456789abcdef_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == xor_assign(-0xf0f0f0f0f0f0f0f_ivec, -0x123456789abcdef_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == xor_assign( 0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0x1d3b597795b3d1e_ivec == xor_assign( 0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+static_assert(-0xe2c4a6886a4c2e2_ivec == xor_assign(-0x123456789abcdef_ivec,  0xf0f0f0f0f0f0f0f_ivec));
+static_assert( 0xe2c4a6886a4c2e0_ivec == xor_assign(-0x123456789abcdef_ivec, -0xf0f0f0f0f0f0f0f_ivec));
+
+static_assert(  0x0_ivec == xor_assign(  0x0_ivec,  0x10_ivec));
+static_assert(  0x0_ivec == xor_assign(  0x0_ivec, -0x10_ivec));
+static_assert(-0x10_ivec == xor_assign(+ 0x0_ivec,  0x10_ivec));
+static_assert(-0x10_ivec == xor_assign(+ 0x0_ivec, -0x10_ivec));
+static_assert( 0x10_ivec == xor_assign( 0x10_ivec,   0x0_ivec));
+static_assert(-0x10_ivec == xor_assign(-0x10_ivec,   0x0_ivec));
+static_assert( 0x10_ivec == xor_assign( 0x10_ivec, + 0x0_ivec));
+static_assert(-0x10_ivec == xor_assign(-0x10_ivec, + 0x0_ivec));
 
 /* operator + */
 
@@ -637,6 +787,32 @@ static_assert(-0x10000000000000000_ivec == (-0xffffffffffffffff_ivec8 + (-1)));
 static_assert(-0x1fffffffffffffffe_ivec == (-0xffffffffffffffff_ivec8 + (-0xffffffffffffffff_ivec8)));
 static_assert(-0x10202020202020201_ivec == (-0xf0f0f0f0f0f0f0f0_ivec8 + (-0x1111111111111111_ivec8)));
 
+/* operator += */
+
+constexpr auto add_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs += rhs;
+}
+
+static_assert( 1_ivec == add_assign( 1_ivec8,  0_ivec8));
+static_assert( 0_ivec == add_assign(-1_ivec8,  1_ivec8));
+static_assert( 2_ivec == add_assign( 1_ivec8,  1_ivec8));
+static_assert( 3_ivec == add_assign( 1_ivec8,  2_ivec8));
+static_assert(-2_ivec == add_assign(-1_ivec8, -1_ivec8));
+static_assert(-3_ivec == add_assign(-1_ivec8, -2_ivec8));
+
+static_assert(  0x0000000000000000_ivec == add_assign( 0xffffffffffffffff_ivec8,  1));
+static_assert(  0xfffffffffffffffe_ivec == add_assign( 0xffffffffffffffff_ivec8,  0xffffffffffffffff_ivec8));
+static_assert(  0x0202020202020201_ivec == add_assign( 0xf0f0f0f0f0f0f0f0_ivec8,  0x1111111111111111_ivec8));
+static_assert(  0xfffffffffffffffe_ivec == add_assign( 0xffffffffffffffff_ivec8, -1));
+static_assert(                 0x0_ivec == add_assign( 0xffffffffffffffff_ivec8, -0xffffffffffffffff_ivec8));
+static_assert(  0xdfdfdfdfdfdfdfdf_ivec == add_assign( 0xf0f0f0f0f0f0f0f0_ivec8, -0x1111111111111111_ivec8));
+static_assert(- 0xfffffffffffffffe_ivec == add_assign(-0xffffffffffffffff_ivec8,  1));
+static_assert(                 0x0_ivec == add_assign(-0xffffffffffffffff_ivec8,  0xffffffffffffffff_ivec8));
+static_assert(- 0xdfdfdfdfdfdfdfdf_ivec == add_assign(-0xf0f0f0f0f0f0f0f0_ivec8,  0x1111111111111111_ivec8));
+static_assert(-0x10000000000000000_ivec == add_assign(-0xffffffffffffffff_ivec8, -1));
+static_assert(  0x0000000000000002_ivec == add_assign(-0xffffffffffffffff_ivec8, -0xffffffffffffffff_ivec8));
+static_assert(  0xfdfdfdfdfdfdfdff_ivec == add_assign(-0xf0f0f0f0f0f0f0f0_ivec8, -0x1111111111111111_ivec8));
+
 /* operator - */
 
 static_assert( 1_ivec == ( 1_ivec8 - ( 0_ivec8)));
@@ -658,6 +834,33 @@ static_assert(-0x10202020202020201_ivec == (-0xf0f0f0f0f0f0f0f0_ivec8 - ( 0x1111
 static_assert(- 0xfffffffffffffffe_ivec == (-0xffffffffffffffff_ivec8 - (-1)));
 static_assert(-                0x0_ivec == (-0xffffffffffffffff_ivec8 - (-0xffffffffffffffff_ivec8)));
 static_assert(- 0xdfdfdfdfdfdfdfdf_ivec == (-0xf0f0f0f0f0f0f0f0_ivec8 - (-0x1111111111111111_ivec8)));
+
+/* operator -= */
+
+constexpr auto sub_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs -= rhs;
+}
+
+static_assert( 1_ivec == sub_assign( 1_ivec8,  0_ivec8));
+static_assert(-2_ivec == sub_assign(-1_ivec8,  1_ivec8));
+static_assert( 0_ivec == sub_assign( 1_ivec8,  1_ivec8));
+static_assert(15_ivec == sub_assign( 1_ivec8,  2_ivec8));
+static_assert(-1_ivec == sub_assign(+1_ivec8,  2_ivec8));
+static_assert( 0_ivec == sub_assign(-1_ivec8, -1_ivec8));
+static_assert( 1_ivec == sub_assign(-1_ivec8, -2_ivec8));
+
+static_assert(  0xfffffffffffffffe_ivec == sub_assign( 0xffffffffffffffff_ivec8,  1));
+static_assert(                 0x0_ivec == sub_assign( 0xffffffffffffffff_ivec8,  0xffffffffffffffff_ivec8));
+static_assert(  0xdfdfdfdfdfdfdfdf_ivec == sub_assign( 0xf0f0f0f0f0f0f0f0_ivec8,  0x1111111111111111_ivec8));
+static_assert(  0x0000000000000000_ivec == sub_assign( 0xffffffffffffffff_ivec8, -1));
+static_assert(  0xfffffffffffffffe_ivec == sub_assign( 0xffffffffffffffff_ivec8, -0xffffffffffffffff_ivec8));
+static_assert(  0x0202020202020201_ivec == sub_assign( 0xf0f0f0f0f0f0f0f0_ivec8, -0x1111111111111111_ivec8));
+static_assert(-0x10000000000000000_ivec == sub_assign(-0xffffffffffffffff_ivec8,  1));
+static_assert(  0x0000000000000002_ivec == sub_assign(-0xffffffffffffffff_ivec8,  0xffffffffffffffff_ivec8));
+static_assert(  0xfdfdfdfdfdfdfdff_ivec == sub_assign(-0xf0f0f0f0f0f0f0f0_ivec8,  0x1111111111111111_ivec8));
+static_assert(- 0xfffffffffffffffe_ivec == sub_assign(-0xffffffffffffffff_ivec8, -1));
+static_assert(-                0x0_ivec == sub_assign(-0xffffffffffffffff_ivec8, -0xffffffffffffffff_ivec8));
+static_assert(- 0xdfdfdfdfdfdfdfdf_ivec == sub_assign(-0xf0f0f0f0f0f0f0f0_ivec8, -0x1111111111111111_ivec8));
 
 /* operator * */
 
@@ -695,6 +898,50 @@ static_assert( 299_ivec == ( 13_ivec8) * ( 23_ivec8));
 static_assert(-299_ivec == ( 13_ivec8) * (-23_ivec8));
 static_assert(-299_ivec == (-13_ivec8) * ( 23_ivec8));
 static_assert( 299_ivec == (-13_ivec8) * (-23_ivec8));
+
+/* operator *= */
+
+constexpr auto mul_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs *= rhs;
+}
+
+static_assert(  1_ivec == mul_assign( 1_ivec8,  1_ivec8));
+static_assert(  2_ivec == mul_assign( 1_ivec8,  2_ivec8));
+static_assert(  8_ivec == mul_assign( 1_ivec8,  8_ivec8));
+static_assert(  0_ivec == mul_assign( 1_ivec8,  0x100000000_ivec8));
+static_assert(- 1_ivec == mul_assign(+1_ivec8, -1_ivec8));
+static_assert( 15_ivec == mul_assign( 1_ivec8, -1_ivec8));
+static_assert(- 2_ivec == mul_assign(+1_ivec8, -2_ivec8));
+static_assert( 14_ivec == mul_assign( 1_ivec8, -2_ivec8));
+static_assert(- 8_ivec == mul_assign(+1_ivec8, -8_ivec8));
+static_assert(  8_ivec == mul_assign( 1_ivec8, -8_ivec8));
+static_assert(  0_ivec == mul_assign( 1_ivec8, -0x100000000_ivec8));
+static_assert(- 1_ivec == mul_assign(-1_ivec8,  1_ivec8));
+static_assert(- 2_ivec == mul_assign(-1_ivec8,  2_ivec8));
+static_assert(- 8_ivec == mul_assign(-1_ivec8,  8_ivec8));
+static_assert(  0_ivec == mul_assign(-1_ivec8,  0x100000000_ivec8));
+static_assert(  1_ivec == mul_assign(-1_ivec8, -1_ivec8));
+static_assert(  2_ivec == mul_assign(-1_ivec8, -2_ivec8));
+static_assert(  8_ivec == mul_assign(-1_ivec8, -8_ivec8));
+static_assert(  0_ivec == mul_assign(-1_ivec8, -0x100000000_ivec8));
+
+static_assert(  0x0000_ivec == mul_assign( 0xffff_ivec8,  0x100010000_ivec8));
+static_assert(  0x0000_ivec == mul_assign( 0xffff_ivec8,  0x100020000_ivec8));
+static_assert(  0x0001_ivec == mul_assign( 0xffff_ivec8,   0xffffffff_ivec8));
+static_assert(  0x0000_ivec == mul_assign( 0xffff_ivec8, -0x100010000_ivec8));
+static_assert(  0x0000_ivec == mul_assign( 0xffff_ivec8, -0x100020000_ivec8));
+static_assert(  0xffff_ivec == mul_assign( 0xffff_ivec8, - 0xffffffff_ivec8));
+static_assert(-0x10000_ivec == mul_assign(-0xffff_ivec8,  0x100010000_ivec8));
+static_assert(  0x0000_ivec == mul_assign(-0xffff_ivec8,  0x100020000_ivec8));
+static_assert(  0xffff_ivec == mul_assign(-0xffff_ivec8,   0xffffffff_ivec8));
+static_assert(-0x10000_ivec == mul_assign(-0xffff_ivec8, -0x100010000_ivec8));
+static_assert(  0x0000_ivec == mul_assign(-0xffff_ivec8, -0x100020000_ivec8));
+static_assert(- 0xffff_ivec == mul_assign(-0xffff_ivec8, - 0xffffffff_ivec8));
+
+static_assert( 43_ivec == mul_assign( 13_ivec8,  23_ivec8));
+static_assert( 85_ivec == mul_assign( 13_ivec8, -23_ivec8));
+static_assert(-43_ivec == mul_assign(-13_ivec8,  23_ivec8));
+static_assert( 43_ivec == mul_assign(-13_ivec8, -23_ivec8));
 
 /* abs() */
 
@@ -831,5 +1078,67 @@ static_assert( 0xfffffffffffffffffffffffff_ivec == (-0xfffffffffffffffffffffffff
 static_assert(-            0xfffffffffffff      == (-0xffffffffffffffffffffffffffffffffffffff_ivec) % (-0x10000000000000));
 static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, -0x10000000000000));
 static_assert(checkdiv(-0xffffffffffffffffffffffffffffffffffffff_ivec, -0xfffffffffffff));
+
+/* operator /=, operator %= */
+
+constexpr auto div_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs /= rhs;
+}
+
+constexpr auto mod_assign(auto lhs, auto const & rhs) noexcept {
+	return lhs %= rhs;
+}
+
+static_assert( 0_ivec == div_assign(  0_ivec, 3_ivec));
+static_assert( 0_ivec == mod_assign(  0_ivec, 3_ivec));
+static_assert( 0_ivec == div_assign(  1_ivec, 3_ivec));
+static_assert( 1_ivec == mod_assign(  1_ivec, 3_ivec));
+static_assert( 0_ivec == div_assign(  2_ivec, 3_ivec));
+static_assert( 2_ivec == mod_assign(  2_ivec, 3_ivec));
+static_assert( 1_ivec == div_assign(  3_ivec, 3_ivec));
+static_assert( 0_ivec == mod_assign(  3_ivec, 3_ivec));
+static_assert(42_ivec == div_assign(127_ivec, 3_ivec));
+static_assert( 1_ivec == mod_assign(127_ivec, 3_ivec));
+static_assert( 0_ivec == div_assign(  0_ivec, 3));
+static_assert( 0_ivec == mod_assign(  0_ivec, 3));
+
+static_assert(  0_ivec == div_assign(  0_ivec, -3_ivec));
+static_assert(  0_ivec == mod_assign(  0_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(  1_ivec, -3_ivec));
+static_assert(  1_ivec == mod_assign(  1_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(  2_ivec, -3_ivec));
+static_assert(  2_ivec == mod_assign(  2_ivec, -3_ivec));
+static_assert( 15_ivec == div_assign(  3_ivec, -3_ivec));
+static_assert(  0_ivec == mod_assign(  3_ivec, -3_ivec));
+static_assert(982_ivec == div_assign(127_ivec, -3_ivec));
+static_assert(  1_ivec == mod_assign(127_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(  0_ivec, -3));
+static_assert(  0_ivec == mod_assign(  0_ivec, -3));
+
+static_assert(  0_ivec == div_assign(-  0_ivec, 3_ivec));
+static_assert(  0_ivec == mod_assign(-  0_ivec, 3_ivec));
+static_assert(  0_ivec == div_assign(-  1_ivec, 3_ivec));
+static_assert(- 1_ivec == mod_assign(-  1_ivec, 3_ivec));
+static_assert(  0_ivec == div_assign(-  2_ivec, 3_ivec));
+static_assert(- 2_ivec == mod_assign(-  2_ivec, 3_ivec));
+static_assert(- 1_ivec == div_assign(-  3_ivec, 3_ivec));
+static_assert(  0_ivec == mod_assign(-  3_ivec, 3_ivec));
+static_assert(-42_ivec == div_assign(-127_ivec, 3_ivec));
+static_assert(- 1_ivec == mod_assign(-127_ivec, 3_ivec));
+static_assert(  0_ivec == div_assign(-  0_ivec, 3));
+static_assert(  0_ivec == mod_assign(-  0_ivec, 3));
+
+static_assert(  0_ivec == div_assign(-  0_ivec, -3_ivec));
+static_assert(  0_ivec == mod_assign(-  0_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(-  1_ivec, -3_ivec));
+static_assert(- 1_ivec == mod_assign(-  1_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(-  2_ivec, -3_ivec));
+static_assert(- 2_ivec == mod_assign(-  2_ivec, -3_ivec));
+static_assert(  1_ivec == div_assign(-  3_ivec, -3_ivec));
+static_assert(  0_ivec == mod_assign(-  3_ivec, -3_ivec));
+static_assert( 42_ivec == div_assign(-127_ivec, -3_ivec));
+static_assert(- 1_ivec == mod_assign(-127_ivec, -3_ivec));
+static_assert(  0_ivec == div_assign(-  0_ivec, -3));
+static_assert(  0_ivec == mod_assign(-  0_ivec, -3));
 
 } /* namespace */
