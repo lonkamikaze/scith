@@ -310,7 +310,10 @@ class ints_access<bool, IntsT> : public ints_digits<bool, IntsT> {
 	using ints_digits<bool, IntsT>::ints_digits;
 };
 
-template <integral T, integrals IntsT>
+template <typename T>
+concept bisectable = (integral<T> && (digits_v<T> > 1));
+
+template <bisectable T, integrals IntsT>
 class ints_bisect_reference {
 	private:
 	using UT = std::make_unsigned_t<T>;
@@ -352,7 +355,7 @@ class ints_bisect_reference {
 };
 
 
-template <integral T, integrals IntsT>
+template <bisectable T, integrals IntsT>
 struct ints_bisect {
 	private:
 	using UT = std::make_unsigned_t<T>;
@@ -390,7 +393,7 @@ constexpr ints_access<T, IntsT> access_as(IntsT & values) noexcept {
 	return {values};
 }
 
-template <integral T, integrals IntsT>
+template <bisectable T, integrals IntsT>
 constexpr ints_bisect<T, IntsT> bisect_as(IntsT & values) noexcept {
 	return {values};
 }

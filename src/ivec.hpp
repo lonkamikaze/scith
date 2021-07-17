@@ -38,6 +38,7 @@ using traits::svalue_t;
 using traits::uvalue_t;
 
 using iaccess::integrals;
+using iaccess::bisectable;
 using iaccess::digits_as;
 using iaccess::access_as;
 using iaccess::bisect_as;
@@ -163,7 +164,7 @@ constexpr auto access_as(IntsT & value) {
 	return access_as<T>(value.values);
 }
 
-template <integral T, integer_variant IntsT>
+template <bisectable T, integer_variant IntsT>
 constexpr auto bisect_as(IntsT & value) {
 	return bisect_as<T>(value.values);
 }
