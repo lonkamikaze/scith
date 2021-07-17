@@ -22,9 +22,7 @@ using itraits::min;
 using itraits::max;
 using itraits::log2;
 using itraits::cdiv;
-using itraits::make_signed_if;
 using itraits::make_signed_if_t;
-using itraits::make_unsigned_if;
 using itraits::make_unsigned_if_t;
 using itraits::min_digits_v;
 using itraits::max_digits_v;
@@ -146,10 +144,7 @@ template <integral T>
 struct select_max_digits_type<T> { using type = T; };
 
 template <integral ... Ts>
-struct select_common_type : make_signed_if<has_signed_v<Ts ...>, select_max_digits_t<Ts ...>> {};
-
-template <integral ... Ts>
-using select_common_t = typename select_common_type<Ts ...>::type;
+using select_common_t = make_signed_if_t<has_signed_v<Ts ...>, select_max_digits_t<Ts ...>>;
 
 template <integer_compatible ... Ts>
 using select_common_value_t = select_common_t<value_t<Ts> ...>;
