@@ -30,6 +30,7 @@ using itraits::sum_digits_v;
 using itraits::has_signed_v;
 using itraits::has_unsigned_v;
 using itraits::unsigned_cast;
+using itraits::signed_cast;
 
 using traits::value_t;
 using traits::svalue_t;
@@ -216,10 +217,16 @@ constexpr integer<BaseT, DigitsV>::operator T() const noexcept {
 	return access_as<T>(*this)[0];
 }
 
-template <integer_compatible T>
+template <integer_compatible T> requires signed_integral<value_t<T>>
 constexpr bool isnan(T const & value) {
 	auto const top{digits_as<value_t<T>>(value)[T::digits]};
-	return (top != 0) && (top != -signed_integral<value_t<T>>);
+	return top != 0 && top != -1;
+}
+
+template <integer_compatible T> requires unsigned_integral<value_t<T>>
+constexpr bool isnan(T const & value) {
+	auto const top{digits_as<value_t<T>>(value)[T::digits]};
+	return top != 0;
 }
 
 template <integer_compatible LT, integer_compatible RT>
@@ -275,11 +282,11 @@ constexpr auto operator ~(T const & op) noexcept {
 template <integer_variant T>
 constexpr T operator <<(T const & value, std::ptrdiff_t const lshift) noexcept {
 	using value_type = value_t<T>;
-	constexpr std::ptrdiff_t const value_digits{udigits_v<value_type>};
+	constexpr auto const value_digits{udigits_v<value_type>};
 	auto const && values{digits_as<value_type>(value)};
 	T result{};
-	for (std::ptrdiff_t i{0}; i < result.size(); ++i) {
-		result[i] = values[i * value_digits - lshift];
+	for (std::size_t i{0}; i < result.size(); ++i) {
+		result[i] = values[signed_cast(i * value_digits) - lshift];
 	}
 	if (lshift > 0) {
 		fix_pad(result);
@@ -290,16 +297,16 @@ constexpr T operator <<(T const & value, std::ptrdiff_t const lshift) noexcept {
 template <integer_variant T>
 constexpr T & operator <<=(T & value, std::ptrdiff_t const lshift) noexcept {
 	using value_type = value_t<T>;
-	constexpr std::ptrdiff_t const value_digits{udigits_v<value_type>};
+	constexpr auto const value_digits{udigits_v<value_type>};
 	auto const && values{digits_as<value_type>(value)};
 	if (lshift > 0) {
-		for (auto i{static_cast<std::ptrdiff_t>(value.size()) - 1}; i >= 0; --i) {
-			value[i] = values[i * value_digits - lshift];
+		for (auto i{value.size() - 1}; i < value.size(); --i) {
+			value[i] = values[signed_cast(i * value_digits) - lshift];
 		}
 		fix_pad(value);
 	} else {
-		for (std::ptrdiff_t i{0}; i < value.size(); ++i) {
-			value[i] = values[i * value_digits - lshift];
+		for (std::size_t i{0}; i < value.size(); ++i) {
+			value[i] = values[signed_cast(i * value_digits) - lshift];
 		}
 	}
 	return value;

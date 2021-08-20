@@ -48,7 +48,7 @@ constexpr auto radix() noexcept {
 }
 
 constexpr std::string_view radix_tail(std::string_view const str) noexcept {
-	return str.substr(std::array{2, 2, 1, 0}[match_index((str != "0") * radix(str), 16, 2, 8)]);
+	return str.substr(std::array{2, 2, 1, 0}[match_index((str != "0") * radix(str), 16U, 2U, 8U)]);
 }
 
 template <char ... Vs>
@@ -138,7 +138,7 @@ requires (10 == radix_v<Vs ...>)
 constexpr std::size_t const digits_v<Vs ...>{cdiv(digits<Vs ...>().size() * 3322, 1000)};
 
 constexpr bool valid(int const digit, unsigned const radix) noexcept {
-	return digit >= 0 && digit < radix;
+	return digit >= 0 && static_cast<unsigned>(digit) < radix;
 }
 
 constexpr bool valid(std::string_view const str) noexcept {

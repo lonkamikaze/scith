@@ -106,7 +106,7 @@ class ints_digits_reference {
 	DataT * values;
 	std::ptrdiff_t i;
 
-	template <UDataT(* FuncV)(UDataT, UDataT) noexcept>
+	template <auto FuncV>
 	constexpr ints_digits_reference & assign(T const op) noexcept {
 		auto const start{max(0, i)};
 		auto const limit{min(i + access_digits, values_digits)};
@@ -182,7 +182,7 @@ class ints_digits_reference<bool, IntsT> {
 	DataT * values;
 	std::ptrdiff_t i;
 
-	template <UDataT(* FuncV)(UDataT, UDataT) noexcept>
+	template <auto FuncV>
 	constexpr auto& assign(bool const op) noexcept {
 		if(i >= 0 && i < values_digits) {
 			auto const index {i / value_digits};
