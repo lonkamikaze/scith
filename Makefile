@@ -1,6 +1,10 @@
-CXX=       clang++12
-CXXFLAGS+= -std=c++20 -Wall -Werror -ferror-limit=1
-CXXFLAGS+= -march=native -O2 -pipe
+CXXFLAGS+=      -std=c++20 -Wall -Werror
+CXXFLAGS+=      -march=native -O2 -pipe
+CXXFLAGS_clang= -ferror-limit=1
+CXXFLAGS_gcc=   -fmax-errors=1
+
+CXXVER!=        ${CXX} --version
+CXXFLAGS+=      ${CXXFLAGS_${CXXVER:Mg++*:U:C/.+/gcc/}${CXXVER:Mclang:U}}
 
 .SUFFIXES: .o .pcm .cppm
 
